@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface QuestionReplyRepository extends JpaRepository<QuestionReply, Long> {
-    List<QuestionReply> findByQuestionIdInOrderByCreatedAtAsc(Collection<Long> ids);
+    List<QuestionReply> findByQuestionIdInAndStatusOrderByCreatedAtAsc(Collection<Long> ids, String status);
 }

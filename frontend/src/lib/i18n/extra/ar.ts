@@ -428,4 +428,13 @@ export const ar: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "هذا النوع من الملفات غير مسموح. استخدم PDF أو الصور أو مستندات Office أو النص أو MP3 أو M4A أو MP4.",
   "The file content does not match its extension": "محتوى الملف لا يطابق امتداده",
   "Please choose a file": "يُرجى اختيار ملف",
+  "Ask a question or share a thought…": "اطرح سؤالًا أو شارك فكرة…",
+  "Add a reply…": "أضف ردًا…",
+  "Show replies ({n})": "عرض الردود ({n})",
+  "Hide replies": "إخفاء الردود",
+  "Comment": "تعليق",
+  "Be the first to ask a question.": "كن أول من يطرح سؤالًا.",
+  "Delete": "حذف",
+  "Delete this question?": "هل تريد حذف هذا السؤال؟",
+  "Delete this reply?": "هل تريد حذف هذا الرد؟",
 };

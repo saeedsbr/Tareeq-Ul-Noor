@@ -428,4 +428,13 @@ export const fr: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "Ce type de fichier n’est pas autorisé. Utilisez PDF, images, documents Office, texte, MP3, M4A ou MP4.",
   "The file content does not match its extension": "Le contenu du fichier ne correspond pas à son extension",
   "Please choose a file": "Veuillez choisir un fichier",
+  "Ask a question or share a thought…": "Posez une question ou partagez une réflexion…",
+  "Add a reply…": "Ajouter une réponse…",
+  "Show replies ({n})": "Afficher les réponses ({n})",
+  "Hide replies": "Masquer les réponses",
+  "Comment": "Commenter",
+  "Be the first to ask a question.": "Soyez le premier à poser une question.",
+  "Delete": "Supprimer",
+  "Delete this question?": "Supprimer cette question ?",
+  "Delete this reply?": "Supprimer cette réponse ?",
 };

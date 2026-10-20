@@ -428,4 +428,13 @@ export const hi: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "इस प्रकार की फ़ाइल की अनुमति नहीं है। PDF, चित्र, ऑफ़िस दस्तावेज़, टेक्स्ट, MP3, M4A या MP4 उपयोग करें।",
   "The file content does not match its extension": "फ़ाइल की सामग्री उसके एक्सटेंशन से मेल नहीं खाती",
   "Please choose a file": "कृपया एक फ़ाइल चुनें",
+  "Ask a question or share a thought…": "कोई प्रश्न पूछें या अपनी बात साझा करें…",
+  "Add a reply…": "उत्तर जोड़ें…",
+  "Show replies ({n})": "उत्तर देखें ({n})",
+  "Hide replies": "उत्तर छिपाएँ",
+  "Comment": "टिप्पणी",
+  "Be the first to ask a question.": "पहला प्रश्न आप ही पूछें।",
+  "Delete": "हटाएँ",
+  "Delete this question?": "यह प्रश्न हटाएँ?",
+  "Delete this reply?": "यह उत्तर हटाएँ?",
 };

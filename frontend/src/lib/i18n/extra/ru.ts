@@ -428,4 +428,13 @@ export const ru: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "Этот тип файла не разрешён. Используйте PDF, изображения, документы Office, текст, MP3, M4A или MP4.",
   "The file content does not match its extension": "Содержимое файла не соответствует расширению",
   "Please choose a file": "Пожалуйста, выберите файл",
+  "Ask a question or share a thought…": "Задайте вопрос или поделитесь мыслью…",
+  "Add a reply…": "Добавить ответ…",
+  "Show replies ({n})": "Показать ответы ({n})",
+  "Hide replies": "Скрыть ответы",
+  "Comment": "Комментировать",
+  "Be the first to ask a question.": "Задайте первый вопрос.",
+  "Delete": "Удалить",
+  "Delete this question?": "Удалить этот вопрос?",
+  "Delete this reply?": "Удалить этот ответ?",
 };

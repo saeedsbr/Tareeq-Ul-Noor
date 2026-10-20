@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class QuestionService {
-    public record ReplyDto(Long id, String body, String adminName, Instant createdAt) {}
+    public record ReplyDto(Long id, String body, String authorName, boolean teacher, boolean mine, Instant createdAt) {}
     public record QuestionDto(Long id, String body, String status, Long lessonId, String lessonTitle, String courseTitle,
                               String learnerName, String learnerEmail, String gender, String askedBy, boolean mine, Instant createdAt, List<ReplyDto> replies) {}
 
@@ -24,6 +24,12 @@ public class QuestionService {
         this.lessons = lessons; this.courses = courses; this.replies = replies; this.users = users;
     }
 
+    private static ReplyDto replyDto(QuestionReply r, User author, User viewer) {
+        boolean teacher = author != null && author.getRole() == com.ilmpath.identity.Role.ADMIN;
+        String name = author == null ? "" : teacher ? author.getName() : author.getName().trim().split("\\s+")[0];
+        return new ReplyDto(r.getId(), r.getBody(), name, teacher, r.getUserId().equals(viewer.getId()), r.getCreatedAt());
+    }
+
     /** Learners get a first name only; administrators additionally get full name, email and gender. */
     public List<QuestionDto> toDtos(List<Question> qs, User viewer) {
         boolean admin = viewer.getRole() == com.ilmpath.identity.Role.ADMIN;
@@ -32,13 +38,13 @@ public class QuestionService {
             .stream().collect(Collectors.toMap(Lesson::getId, Function.identity()));
         Map<Long, Course> cs = courses.findAllById(ls.values().stream().map(Lesson::getCourseId).collect(Collectors.toSet()))
             .stream().collect(Collectors.toMap(Course::getId, Function.identity()));
-        var rs = replies.findByQuestionIdInOrderByCreatedAtAsc(qs.stream().map(Question::getId).toList());
-        Map<String, User> us = users.findAllById(rs.stream().map(QuestionReply::getAdminUserId).collect(Collectors.toSet()))
+        var rs = replies.findByQuestionIdInAndStatusOrderByCreatedAtAsc(qs.stream().map(Question::getId).toList(), "VISIBLE");
+        Map<String, User> us = users.findAllById(rs.stream().map(QuestionReply::getUserId).collect(Collectors.toSet()))
             .stream().collect(Collectors.toMap(User::getId, Function.identity()));
         Map<String, User> learners = users.findAllById(qs.stream().map(Question::getUserId).collect(Collectors.toSet())).stream().collect(Collectors.toMap(User::getId, Function.identity()));
         Map<Long, List<ReplyDto>> byQ = new HashMap<>();
         for (var r : rs) byQ.computeIfAbsent(r.getQuestionId(), k -> new ArrayList<>())
-            .add(new ReplyDto(r.getId(), r.getBody(), us.containsKey(r.getAdminUserId()) ? us.get(r.getAdminUserId()).getName() : "Administrator", r.getCreatedAt()));
+            .add(replyDto(r, us.get(r.getUserId()), viewer));
         return qs.stream().map(q -> {
             Lesson l = ls.get(q.getLessonId());
             Course c = l == null ? null : cs.get(l.getCourseId());

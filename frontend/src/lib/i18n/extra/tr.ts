@@ -428,4 +428,13 @@ export const tr: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "Bu dosya türüne izin verilmiyor. PDF, görsel, Office belgesi, metin, MP3, M4A veya MP4 kullan.",
   "The file content does not match its extension": "Dosya içeriği uzantısıyla eşleşmiyor",
   "Please choose a file": "Lütfen bir dosya seç",
+  "Ask a question or share a thought…": "Bir soru sor veya bir düşünceni paylaş…",
+  "Add a reply…": "Yanıt ekle…",
+  "Show replies ({n})": "Yanıtları göster ({n})",
+  "Hide replies": "Yanıtları gizle",
+  "Comment": "Yorum yap",
+  "Be the first to ask a question.": "İlk soruyu sen sor.",
+  "Delete": "Sil",
+  "Delete this question?": "Bu soru silinsin mi?",
+  "Delete this reply?": "Bu yanıt silinsin mi?",
 };

@@ -7,6 +7,7 @@ import com.ilmpath.identity.CurrentUser;
 import com.ilmpath.identity.Gender;
 import com.ilmpath.identity.GenderScope;
 import com.ilmpath.identity.User;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,10 +28,11 @@ public class QuestionController {
     private final QuestionRepository questions;
     private final LessonRepository lessons;
     private final QuestionService service;
+    private final QuestionReplyRepository replies;
     private final RateLimiter limiter;
 
-    public QuestionController(QuestionRepository questions, LessonRepository lessons, QuestionService service, RateLimiter limiter) {
-        this.questions = questions; this.lessons = lessons; this.service = service; this.limiter = limiter;
+    public QuestionController(QuestionRepository questions, LessonRepository lessons, QuestionService service, RateLimiter limiter, QuestionReplyRepository replies) {
+        this.replies = replies; this.questions = questions; this.lessons = lessons; this.service = service; this.limiter = limiter;
     }
 
     @PostMapping("/lessons/{lessonId}/questions") @ResponseStatus(HttpStatus.CREATED)
@@ -75,6 +77,33 @@ public class QuestionController {
         Gender g = GenderScope.requireLearnerGender(me);
         Question q = questions.findVisibleTo(id, g).orElseThrow(() -> ApiException.notFound("Question not found"));
         return service.toDtos(List.of(q), me).get(0);
+    }
+
+    public record ReplyReq(@NotBlank @Size(min = 1, max = 2000, message = "Please keep it under 2000 characters") String body) {}
+
+    /** Comment-style reply from anyone in the same gender group. */
+    @PostMapping("/questions/{id}/replies") @ResponseStatus(HttpStatus.CREATED) @Transactional
+    public QuestionService.QuestionDto reply(@PathVariable Long id, @Valid @RequestBody ReplyReq r) {
+        User me = CurrentUser.get();
+        Gender g = GenderScope.requireLearnerGender(me);
+        limiter.check("reply:" + me.getId(), 30, Duration.ofMinutes(10));
+        Question q = questions.findVisibleTo(id, g).orElseThrow(() -> ApiException.notFound("Question not found"));
+        QuestionReply x = new QuestionReply(); x.setQuestionId(q.getId()); x.setUserId(me.getId()); x.setBody(r.body().trim());
+        replies.save(x);
+        return service.toDtos(List.of(q), me).get(0);
+    }
+
+    @DeleteMapping("/questions/{qid}/replies/{rid}") @ResponseStatus(HttpStatus.NO_CONTENT) @Transactional
+    public void deleteReply(@PathVariable Long qid, @PathVariable Long rid) {
+        User me = CurrentUser.get();
+        replies.findById(rid).filter(x -> x.getQuestionId().equals(qid) && x.getUserId().equals(me.getId()))
+            .orElseThrow(() -> ApiException.notFound("Reply not found")).setStatus("HIDDEN");
+    }
+
+    @DeleteMapping("/questions/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) @Transactional
+    public void deleteOwn(@PathVariable Long id) {
+        User me = CurrentUser.get();
+        questions.findById(id).filter(x -> x.getUserId().equals(me.getId())).orElseThrow(() -> ApiException.notFound("Question not found")).setStatus("HIDDEN");
     }
 
     @PatchMapping("/questions/{id}/resolve")

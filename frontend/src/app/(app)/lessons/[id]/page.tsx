@@ -12,47 +12,10 @@ import type { LessonDetail, QuestionDto } from '@/lib/types';
 import { Badge, ErrorBox, ProgressBar, Spinner } from '@/components/ui';
 import { statusLabel, timeAgo } from '@/lib/format';
 import { useI18n } from '@/lib/i18n';
+import LessonComments from '@/components/LessonComments';
 import { useHydrated } from '@/lib/hydrated';
 
-const askSchema = z.object({ body: z.string().trim().min(5, 'Please write at least 5 characters').max(2000, 'Please keep it under 2000 characters') });
 const TABS = ['Notes', 'Benefits', 'Resources', 'Questions', 'Quiz'] as const;
-
-function Ask({ lessonId }: { lessonId: number }) {
-  const { t } = useI18n();
-  const ready = useHydrated();
-  const qc = useQueryClient();
-  const questions = useQuery({ queryKey: ['lesson-questions', lessonId], queryFn: () => get<QuestionDto[]>(`/lessons/${lessonId}/questions`) });
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof askSchema>>({ resolver: zodResolver(askSchema) });
-  const [ok, setOk] = useState(false);
-  const m = useMutation({
-    mutationFn: (v: z.infer<typeof askSchema>) => post(`/lessons/${lessonId}/questions`, v),
-    onSuccess: () => { reset(); setOk(true); qc.invalidateQueries({ queryKey: ['lesson-questions', lessonId] }); qc.invalidateQueries({ queryKey: ['my-questions'] }); },
-  });
-  return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <form method="post" onSubmit={handleSubmit((v) => { setOk(false); m.mutate(v); })} noValidate>
-        <h3 className="mb-2 text-sm font-semibold">{t("Leave a Question")}</h3>
-        <label htmlFor="qbody" className="sr-only">{t("Your question")}</label>
-        <textarea id="qbody" rows={5} className="input" placeholder={t("Type your question here…")} {...register('body')} />
-        {errors.body && <p className="field-error" role="alert">{t(errors.body.message ?? '')}</p>}
-        {m.isError && <div className="mt-2"><ErrorBox message={(m.error as ApiError).message} /></div>}
-        {ok && <p role="status" className="mt-2 text-sm text-emerald-800">{t("Your question was sent. The teacher will reply here.")}</p>}
-        <button className="btn-primary mt-3 w-full" disabled={m.isPending || !ready}>{m.isPending ? t("Sending…") : t("Submit")}</button>
-        <p className="mt-2 text-xs text-muted">{t("Visible only to learners of your own group and your teacher.")}</p>
-      </form>
-      <div>
-        <h3 className="mb-2 text-sm font-semibold">{t("Questions on this lesson from your group")}</h3>
-        {questions.isLoading ? <Spinner /> : (questions.data ?? []).length === 0 ? <p className="text-sm text-muted">{t("No questions yet.")}</p> : (
-          <ul className="space-y-3">{questions.data!.map((x) => (
-            <li key={x.id} className="rounded-lg border border-line p-3 text-sm">
-              <div className="flex items-start justify-between gap-2"><p>{x.body}</p><Badge kind={x.status}>{t(statusLabel[x.status])}</Badge></div>
-              <p className="mt-1 text-xs text-muted">{x.mine ? t("You") : x.askedBy} · {timeAgo(x.createdAt)}</p>
-              {x.replies.map((r) => <div key={r.id} className="mt-2 rounded-md bg-sand-100/70 p-2 text-sm"><p className="whitespace-pre-line">{r.body}</p><p className="mt-1 text-xs text-muted">{r.adminName} · {timeAgo(r.createdAt)}</p></div>)}
-            </li>))}</ul>)}
-      </div>
-    </div>
-  );
-}
 
 export default function LessonPage() {
   const { t } = useI18n();
@@ -116,7 +79,7 @@ export default function LessonPage() {
               <ul className="space-y-2">{l.resources.map((r) => <li key={r.id}>
                 {/^(https?:\/\/|\/api\/v1\/files\/)/.test(r.contentOrUrl) ? <a href={r.contentOrUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-forest hover:underline">{r.title} {r.contentOrUrl.startsWith('/api/') ? <FileText className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}</a>
                   : <p className="text-sm"><strong>{r.title}:</strong> {r.contentOrUrl}</p>}</li>)}</ul>))}
-            {tab === 'Questions' && <Ask lessonId={l.id} />}
+            {tab === 'Questions' && <LessonComments lessonId={l.id} />}
             {tab === 'Quiz' && (l.quizId ? (
               <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-semibold">{l.quizTitle}</p><p className="text-xs text-muted">{t("Test what you learned in this lesson.")}</p></div>
                 <Link href={`/quizzes/${l.quizId}`} className="btn-primary">{t("Take the quiz")}</Link></div>) : <p className="text-sm text-muted">{t("There is no quiz for this lesson.")}</p>)}

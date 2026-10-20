@@ -24,7 +24,7 @@ export default function AdminQuestions() {
       <div className="mt-5 space-y-4">{q.isLoading ? <Spinner /> : q.isError ? <ErrorBox retry={() => q.refetch()} /> : q.data!.length === 0 ? <Empty title={t("Inbox is clear")} hint={t("No questions in this view.")} /> : q.data!.map((x) => (
         <article key={x.id} className="card p-5">
           <div className="flex items-start justify-between gap-3"><div><p className="text-xs text-forest">{x.courseTitle} · {x.lessonTitle}</p><p className="mt-1 whitespace-pre-line text-sm font-medium">{x.body}</p><p className="mt-1 text-xs text-muted">{x.learnerName} ({x.learnerEmail}) · {x.gender === 'MALE' ? t('Male') : x.gender === 'FEMALE' ? t('Female') : '—'} · {timeAgo(x.createdAt)}</p></div><Badge kind={x.status}>{t(statusLabel[x.status])}</Badge></div>
-          {x.replies.map((r) => <div key={r.id} className="mt-3 rounded-lg bg-sand-100/60 p-3 text-sm"><p className="whitespace-pre-line">{r.body}</p><p className="mt-1 text-xs text-muted">{r.adminName} · {timeAgo(r.createdAt)}</p></div>)}
+          {x.replies.map((r) => <div key={r.id} className="mt-3 rounded-lg bg-sand-100/60 p-3 text-sm"><p className="whitespace-pre-line">{r.body}</p><p className="mt-1 text-xs text-muted">{r.authorName} · {timeAgo(r.createdAt)}</p></div>)}
           <form className="mt-4" onSubmit={(e) => { e.preventDefault(); const b = (drafts[x.id] ?? '').trim(); if (b) reply.mutate({ id: x.id, body: b }); }}>
             <label htmlFor={`r${x.id}`} className="sr-only">{t("Reply")}</label>
             <textarea id={`r${x.id}`} rows={3} className="input" placeholder={t("Write a reply…")} value={drafts[x.id] ?? ''} onChange={(e) => setDrafts({ ...drafts, [x.id]: e.target.value })} />

@@ -47,7 +47,7 @@ public class AdminCommunityController {
     @PostMapping("/questions/{id}/replies") @ResponseStatus(HttpStatus.CREATED) @Transactional
     public QuestionService.QuestionDto reply(@PathVariable Long id, @Valid @RequestBody ReplyReq r) {
         Question q = questions.findById(id).orElseThrow(() -> ApiException.notFound("Question not found"));
-        QuestionReply x = new QuestionReply(); x.setQuestionId(id); x.setAdminUserId(CurrentUser.get().getId()); x.setBody(r.body().trim());
+        QuestionReply x = new QuestionReply(); x.setQuestionId(id); x.setUserId(CurrentUser.get().getId()); x.setBody(r.body().trim());
         replies.save(x);
         if ("SUBMITTED".equals(q.getStatus())) q.setStatus("ANSWERED");
         questions.save(q);

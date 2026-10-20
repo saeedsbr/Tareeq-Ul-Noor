@@ -72,3 +72,6 @@ Learners without a gender receive `403 {"code":"GENDER_REQUIRED"}` everywhere ex
 
 ## File uploads (added)
 `POST /admin/files` (multipart field `file`, administrator only, max 25 MB) → `{id, name, url, contentType, size}`; allowed: PDF, PNG/JPG/WEBP/GIF, TXT, DOC(X), PPT(X), XLS(X), MP3, M4A, MP4 (extension allowlist plus content check). `GET /files/{id}`: images are public (course covers), every other file requires sign-in. Lesson resources use `type: "FILE"` with `contentOrUrl` = `/api/v1/files/{id}`; notes/benefits have `attachmentName` / `attachmentUrl`.
+
+## Comment-style questions (added)
+The lesson Questions tab works like video comments: one box to post, replies under each comment. `POST /questions/{id}/replies {body}` (any learner of the same gender group; administrators use `/admin/questions/{id}/replies`), `DELETE /questions/{qid}/replies/{rid}` and `DELETE /questions/{id}` (own items only; hidden, not erased). Reply objects: `{id, body, authorName, teacher, mine, createdAt}`. Migration V4 renames `question_replies.admin_user_id` to `user_id` and adds `status`.

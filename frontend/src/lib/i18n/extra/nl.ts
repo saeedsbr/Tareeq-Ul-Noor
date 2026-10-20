@@ -428,4 +428,13 @@ export const nl: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "Dit bestandstype is niet toegestaan. Gebruik PDF, afbeeldingen, Office-documenten, tekst, MP3, M4A of MP4.",
   "The file content does not match its extension": "De inhoud van het bestand komt niet overeen met de extensie",
   "Please choose a file": "Kies een bestand",
+  "Ask a question or share a thought…": "Stel een vraag of deel een gedachte…",
+  "Add a reply…": "Voeg een reactie toe…",
+  "Show replies ({n})": "Reacties tonen ({n})",
+  "Hide replies": "Reacties verbergen",
+  "Comment": "Reageren",
+  "Be the first to ask a question.": "Wees de eerste die een vraag stelt.",
+  "Delete": "Verwijderen",
+  "Delete this question?": "Deze vraag verwijderen?",
+  "Delete this reply?": "Deze reactie verwijderen?",
 };

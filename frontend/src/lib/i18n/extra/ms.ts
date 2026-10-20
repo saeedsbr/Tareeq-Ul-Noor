@@ -428,4 +428,13 @@ export const ms: Record<string, string> = {
   "This file type is not allowed. Use PDF, images, Office documents, text, MP3, M4A or MP4.": "Jenis fail ini tidak dibenarkan. Gunakan PDF, imej, dokumen Office, teks, MP3, M4A atau MP4.",
   "The file content does not match its extension": "Kandungan fail tidak sepadan dengan sambungannya",
   "Please choose a file": "Sila pilih fail",
+  "Ask a question or share a thought…": "Tanya soalan atau kongsi pandangan…",
+  "Add a reply…": "Tambah balasan…",
+  "Show replies ({n})": "Tunjukkan balasan ({n})",
+  "Hide replies": "Sembunyikan balasan",
+  "Comment": "Komen",
+  "Be the first to ask a question.": "Jadilah yang pertama bertanya.",
+  "Delete": "Padam",
+  "Delete this question?": "Padam soalan ini?",
+  "Delete this reply?": "Padam balasan ini?",
 };

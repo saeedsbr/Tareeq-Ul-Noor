@@ -57,7 +57,7 @@ export default function Questions() {
               {open === x.id && (
                 <div className="mt-4 space-y-3 border-t border-line pt-4">
                   {x.replies.length === 0 ? <p className="text-sm text-muted">{t('Waiting for the teacher’s reply.')}</p> : x.replies.map((r) => (
-                    <div key={r.id} className="rounded-lg bg-sand-100/60 p-3 text-sm"><p className="whitespace-pre-line">{r.body}</p><p className="mt-2 text-xs text-muted">{r.adminName} · {timeAgo(r.createdAt)}</p></div>))}
+                    <div key={r.id} className="rounded-lg bg-sand-100/60 p-3 text-sm"><p className="whitespace-pre-line">{r.body}</p><p className="mt-2 text-xs text-muted">{r.authorName} · {timeAgo(r.createdAt)}</p></div>))}
                   <div className="flex gap-2"><Link href={`/lessons/${x.lessonId}`} className="btn-secondary">{t('Open lesson')}</Link>
                     {x.mine && x.status === 'ANSWERED' && <button className="btn-ghost" disabled={resolve.isPending} onClick={() => resolve.mutate(x.id)}>{t('Mark as resolved')}</button>}</div>
                 </div>)}
