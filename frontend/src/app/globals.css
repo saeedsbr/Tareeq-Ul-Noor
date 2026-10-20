@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Colour themes: space-separated RGB channels so Tailwind opacity modifiers keep working. */
+:root, [data-theme='forest'] { --c-forest: 22 78 59; --c-forest-600: 47 107 79; --c-forest-800: 16 64 47; --c-deep: 13 51 41; --c-ivory: 247 245 239; --c-sand: 229 213 181; --c-sand-100: 243 236 220; }
+[data-theme='rose']   { --c-forest: 163 41 95;  --c-forest-600: 196 74 128; --c-forest-800: 134 31 77;  --c-deep: 94 18 56;  --c-ivory: 251 244 246; --c-sand: 240 211 220; --c-sand-100: 248 232 237; }
+[data-theme='purple'] { --c-forest: 91 58 155;  --c-forest-600: 124 92 190; --c-forest-800: 72 44 126;  --c-deep: 46 26 85;  --c-ivory: 247 244 251; --c-sand: 220 207 240; --c-sand-100: 236 229 247; }
+[data-theme='ocean']  { --c-forest: 29 92 138;  --c-forest-600: 60 128 176; --c-forest-800: 21 74 112;  --c-deep: 12 47 74;  --c-ivory: 243 247 250; --c-sand: 207 224 236; --c-sand-100: 227 238 245; }
+[data-theme='sunset'] { --c-forest: 180 86 31;  --c-forest-600: 210 120 60; --c-forest-800: 147 68 15;  --c-deep: 92 42 11;  --c-ivory: 251 246 240; --c-sand: 240 217 189; --c-sand-100: 248 235 218; }
+
+:root { color-scheme: light; }
+html { scroll-behavior: smooth; }
+body { @apply bg-ivory text-charcoal font-sans antialiased; }
+:focus-visible { outline: 2px solid rgb(var(--c-forest)); outline-offset: 2px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-primary { @apply btn bg-forest text-white hover:bg-forest-800; }
+  .btn-secondary { @apply btn border border-line bg-white text-charcoal hover:bg-sand-100; }
+  .btn-ghost { @apply btn text-forest hover:bg-forest/5; }
+  .btn-danger { @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50; }
+  .card { @apply rounded-card border border-line bg-white shadow-soft; }
+  .input { @apply w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm placeholder:text-muted/70 focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest; }
+  .label { @apply mb-1.5 block text-sm font-medium; }
+  .field-error { @apply mt-1 text-xs text-red-700; }
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .h1 { @apply font-serif text-3xl font-semibold tracking-tight md:text-4xl; }
+  .h2 { @apply font-serif text-xl font-semibold; }
+  .pattern { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23E5D5B5' stroke-opacity='.18' stroke-width='1'%3E%3Cpath d='M30 4l26 26-26 26L4 30z'/%3E%3Cpath d='M30 14l16 16-16 16-16-16z'/%3E%3C/g%3E%3C/svg%3E"); }
+}
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+.shimmer-text { background: linear-gradient(90deg, #fff 0%, rgb(var(--c-sand)) 25%, #fff 50%, rgb(var(--c-sand)) 75%, #fff 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } }
+
+.hero-scene { -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 38%); mask-image: linear-gradient(to right, transparent 0%, #000 38%); }
+[dir='rtl'] .hero-scene { -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 38%); mask-image: linear-gradient(to left, transparent 0%, #000 38%); transform: scaleX(-1); }
+[dir='rtl'] .hero-scene > svg { transform: none; }
+html[lang='ar'] body, html[lang='ur'] body { font-family: var(--font-arabic), system-ui, sans-serif; }

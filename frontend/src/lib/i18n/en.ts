@@ -1,0 +1,27 @@
+export const en = {
+  'nav.home': 'Home', 'nav.courses': 'Courses', 'nav.about': 'About', 'nav.contact': 'Contact', 'nav.login': 'Login', 'nav.signup': 'Sign Up', 'nav.search': 'Search courses',
+  'side.dashboard': 'Dashboard', 'side.myCourses': 'My Courses', 'side.allCourses': 'All Courses', 'side.questions': 'Questions', 'side.notes': 'Notes & Benefits', 'side.profile': 'Profile', 'side.signOut': 'Sign out',
+  'side.admin.overview': 'Overview', 'side.admin.courses': 'Courses', 'side.admin.lessons': 'Lessons', 'side.admin.quizzes': 'Quizzes', 'side.admin.notes': 'Notes & Benefits', 'side.admin.learners': 'Learners',
+  'mob.home': 'Home', 'mob.courses': 'Courses', 'mob.questions': 'Questions', 'mob.more': 'More',
+  'hero.tagline': 'LEARN · REFLECT · GROW', 'hero.title': 'Authentic Islamic Knowledge for Everyone',
+  'hero.sub': 'Structured courses, clear guidance, and a supportive learning environment to help you grow in your deen — at your own pace, on any device.',
+  'hero.start': 'Start Learning', 'hero.explore': 'Explore Courses', 'hero.free': 'Free to join · Browse without an account',
+  'feat.courses': 'Structured Courses', 'feat.coursesHint': 'Learn step by step', 'feat.progress': 'Track Progress', 'feat.progressHint': 'See your journey',
+  'feat.ask': 'Ask Questions', 'feat.askHint': 'Get your doubts answered', 'feat.quiz': 'Take Quizzes', 'feat.quizHint': 'Test your knowledge',
+  'home.featured': 'Featured Courses', 'home.viewAll': 'View All', 'home.howTitle': 'A simple path from curiosity to understanding',
+  'home.step1': 'Create a free account', 'home.step2': 'Study a lesson', 'home.step3': 'Ask what you don’t understand', 'home.step4': 'Check your understanding',
+  'home.ctaTitle': 'Begin your journey today', 'home.ctaBtn': 'Create free account',
+  'auth.welcome': 'Welcome back', 'auth.signInSub': 'Sign in to continue your learning.', 'auth.email': 'Email', 'auth.password': 'Password', 'auth.forgot': 'Forgot password?',
+  'auth.signIn': 'Sign in', 'auth.signingIn': 'Signing in…', 'auth.newTo': 'New to Tareeq Ul Noor?', 'auth.createAccount': 'Create an account', 'auth.createTitle': 'Create your account',
+  'auth.fullName': 'Full name', 'auth.createBtn': 'Create account', 'auth.already': 'Already registered?',
+  'dash.greeting': 'Assalamu Alaikum', 'dash.blessing': 'May Allah make this knowledge beneficial for you.', 'dash.progress': 'Your Learning Progress', 'dash.enrolled': 'Enrolled Courses',
+  'dash.completed': 'Completed Lessons', 'dash.quizzes': 'Quizzes Taken', 'dash.questionsAsked': 'Questions Asked', 'dash.continue': 'Continue Learning', 'dash.continueBtn': 'Continue',
+  'dash.myCourses': 'My Courses', 'dash.activity': 'Recent Activity', 'dash.notes': 'Latest Notes', 'dash.recentQ': 'Recent Questions',
+  'prof.theme': 'Colour theme', 'prof.themeHint': 'Pick the colours you enjoy studying with. This is saved on this device.', 'prof.language': 'Language',
+  'prof.languageHint': 'Choose the language of the website. This is saved on this device.', 'prof.personal': 'Personal details', 'prof.name': 'Full name', 'prof.email': 'Email',
+  'prof.emailHint': 'Your email is your sign-in and can’t be changed here.', 'prof.save': 'Save changes', 'prof.password': 'Change password', 'prof.current': 'Current password',
+  'prof.new': 'New password', 'prof.confirm': 'Confirm new password', 'prof.update': 'Update password', 'prof.learner': 'Learner', 'prof.admin': 'Administrator', 'prof.saved': 'Your details were saved.',
+  'status.pending': 'Pending', 'status.answered': 'Answered', 'status.resolved': 'Resolved',
+} as const;
+export type MessageKey = keyof typeof en;
+export type Messages = Record<MessageKey, string>;
