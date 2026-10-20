@@ -437,4 +437,9 @@ export const fr: Record<string, string> = {
   "Delete": "Supprimer",
   "Delete this question?": "Supprimer cette question ?",
   "Delete this reply?": "Supprimer cette réponse ?",
+  "Discussion": "Discussion",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Échangez sur la leçon avec votre enseignant et les autres apprenants. Les noms ne sont affichés qu’entre apprenants du même groupe.",
+  "Edited {date}": "Modifié {date}",
+  "Like": "J’aime",
+  "Dislike": "Je n’aime pas",
 };

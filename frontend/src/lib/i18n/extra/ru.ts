@@ -437,4 +437,9 @@ export const ru: Record<string, string> = {
   "Delete": "Удалить",
   "Delete this question?": "Удалить этот вопрос?",
   "Delete this reply?": "Удалить этот ответ?",
+  "Discussion": "Обсуждение",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Обсуждайте урок с преподавателем и другими учениками. Имена показываются только между учениками одной группы.",
+  "Edited {date}": "Изменено {date}",
+  "Like": "Нравится",
+  "Dislike": "Не нравится",
 };

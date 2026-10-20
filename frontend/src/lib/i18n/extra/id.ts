@@ -437,4 +437,9 @@ export const id: Record<string, string> = {
   "Delete": "Hapus",
   "Delete this question?": "Hapus pertanyaan ini?",
   "Delete this reply?": "Hapus balasan ini?",
+  "Discussion": "Diskusi",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Diskusikan pelajaran dengan guru dan sesama pelajar. Nama hanya ditampilkan di antara pelajar dari kelompok yang sama.",
+  "Edited {date}": "Diedit {date}",
+  "Like": "Suka",
+  "Dislike": "Tidak suka",
 };

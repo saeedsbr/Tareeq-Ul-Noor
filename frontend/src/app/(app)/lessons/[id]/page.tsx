@@ -15,7 +15,7 @@ import { useI18n } from '@/lib/i18n';
 import LessonComments from '@/components/LessonComments';
 import { useHydrated } from '@/lib/hydrated';
 
-const TABS = ['Notes', 'Benefits', 'Resources', 'Questions', 'Quiz'] as const;
+const TABS = ['Notes', 'Benefits', 'Resources', 'Quiz'] as const;
 
 export default function LessonPage() {
   const { t } = useI18n();
@@ -79,7 +79,6 @@ export default function LessonPage() {
               <ul className="space-y-2">{l.resources.map((r) => <li key={r.id}>
                 {/^(https?:\/\/|\/api\/v1\/files\/)/.test(r.contentOrUrl) ? <a href={r.contentOrUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-forest hover:underline">{r.title} {r.contentOrUrl.startsWith('/api/') ? <FileText className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}</a>
                   : <p className="text-sm"><strong>{r.title}:</strong> {r.contentOrUrl}</p>}</li>)}</ul>))}
-            {tab === 'Questions' && <LessonComments lessonId={l.id} />}
             {tab === 'Quiz' && (l.quizId ? (
               <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-semibold">{l.quizTitle}</p><p className="text-xs text-muted">{t("Test what you learned in this lesson.")}</p></div>
                 <Link href={`/quizzes/${l.quizId}`} className="btn-primary">{t("Take the quiz")}</Link></div>) : <p className="text-sm text-muted">{t("There is no quiz for this lesson.")}</p>)}
@@ -91,6 +90,8 @@ export default function LessonPage() {
           {l.nextId ? <Link href={`/lessons/${l.nextId}`} className="btn-primary">{t("Next lesson")}{' '}<ChevronRight className="h-4 w-4 rtl:rotate-180" /></Link>
             : <Link href={`/courses/${l.course.slug}`} className="btn-secondary">{t("Back to course")}</Link>}
         </div>
+
+        <LessonComments lessonId={l.id} />
       </div>
     </div>
   );

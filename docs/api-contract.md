@@ -75,3 +75,6 @@ Learners without a gender receive `403 {"code":"GENDER_REQUIRED"}` everywhere ex
 
 ## Comment-style questions (added)
 The lesson Questions tab works like video comments: one box to post, replies under each comment. `POST /questions/{id}/replies {body}` (any learner of the same gender group; administrators use `/admin/questions/{id}/replies`), `DELETE /questions/{qid}/replies/{rid}` and `DELETE /questions/{id}` (own items only; hidden, not erased). Reply objects: `{id, body, authorName, teacher, mine, createdAt}`. Migration V4 renames `question_replies.admin_user_id` to `user_id` and adds `status`.
+
+## Discussion section (added)
+The comments now sit in a "Discussion" section under every lesson (not a tab). Extra endpoints: `PATCH /questions/{id}` and `PATCH /questions/{qid}/replies/{rid}` (edit own text; `editedAt` is returned), `PUT /questions/{id}/reaction` and `PUT /questions/{qid}/replies/{rid}/reaction` with `{value: 1 | -1 | 0}` (like / dislike / clear; same gender group only). Comments and replies include `likes` and `myReaction`. Migration V5 adds `comment_reactions` and `edited_at` columns.

@@ -437,4 +437,9 @@ export const ar: Record<string, string> = {
   "Delete": "حذف",
   "Delete this question?": "هل تريد حذف هذا السؤال؟",
   "Delete this reply?": "هل تريد حذف هذا الرد؟",
+  "Discussion": "النقاش",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "ناقش الدرس مع معلمك وزملائك. لا تظهر الأسماء إلا بين الطلاب من الفئة نفسها.",
+  "Edited {date}": "تم التعديل {date}",
+  "Like": "إعجاب",
+  "Dislike": "عدم إعجاب",
 };

@@ -437,4 +437,9 @@ export const tr: Record<string, string> = {
   "Delete": "Sil",
   "Delete this question?": "Bu soru silinsin mi?",
   "Delete this reply?": "Bu yanıt silinsin mi?",
+  "Discussion": "Tartışma",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Dersi öğretmenin ve diğer öğrencilerle konuş. İsimler yalnızca aynı gruptaki öğrenciler arasında gösterilir.",
+  "Edited {date}": "Düzenlendi {date}",
+  "Like": "Beğen",
+  "Dislike": "Beğenme",
 };

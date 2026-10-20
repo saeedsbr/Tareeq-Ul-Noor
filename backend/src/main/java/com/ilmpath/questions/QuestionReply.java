@@ -11,6 +11,7 @@ public class QuestionReply {
     @Column(name = "question_id") private Long questionId;
     @Column(name = "user_id") private String userId;
     private String status = "VISIBLE";
+    @Column(name = "edited_at") private Instant editedAt;
     @Column(columnDefinition = "TEXT") private String body;
     @Column(name = "created_at") private Instant createdAt = Instant.now();
 }

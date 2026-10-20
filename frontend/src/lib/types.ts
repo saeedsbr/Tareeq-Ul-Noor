@@ -10,8 +10,8 @@ export type LessonDetail = {
   course: { id: number; title: string; slug: string }; lessons: LessonSummary[]; prevId: number | null; nextId: number | null;
   notes: NoteDto[]; benefits: NoteDto[]; resources: ResourceDto[]; quizId: number | null; quizTitle: string | null; completedCount: number; totalCount: number;
 };
-export type Reply = { id: number; body: string; authorName: string; teacher: boolean; mine: boolean; createdAt: string };
-export type QuestionDto = { id: number; body: string; status: 'SUBMITTED' | 'ANSWERED' | 'RESOLVED' | 'HIDDEN'; lessonId: number; lessonTitle: string; courseTitle: string; learnerName?: string; learnerEmail?: string; gender?: Gender; askedBy: string; mine: boolean; createdAt: string; replies: Reply[] };
+export type Reply = { id: number; body: string; authorName: string; teacher: boolean; mine: boolean; createdAt: string; editedAt?: string; likes: number; myReaction: -1 | 0 | 1 };
+export type QuestionDto = { id: number; body: string; status: 'SUBMITTED' | 'ANSWERED' | 'RESOLVED' | 'HIDDEN'; lessonId: number; lessonTitle: string; courseTitle: string; learnerName?: string; learnerEmail?: string; gender?: Gender; askedBy: string; mine: boolean; createdAt: string; editedAt?: string; likes: number; myReaction: -1 | 0 | 1; replies: Reply[] };
 export type Dashboard = {
   name: string; stats: { enrolledCourses: number; completedLessons: number; quizzesTaken: number; questions: number };
   overallPercent: number; overallDone: number; overallTotal: number;

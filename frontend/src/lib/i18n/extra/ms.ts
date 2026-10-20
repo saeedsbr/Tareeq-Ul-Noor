@@ -437,4 +437,9 @@ export const ms: Record<string, string> = {
   "Delete": "Padam",
   "Delete this question?": "Padam soalan ini?",
   "Delete this reply?": "Padam balasan ini?",
+  "Discussion": "Perbincangan",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Bincangkan pelajaran dengan guru dan rakan pelajar. Nama hanya dipaparkan antara pelajar dalam kumpulan yang sama.",
+  "Edited {date}": "Disunting {date}",
+  "Like": "Suka",
+  "Dislike": "Tidak suka",
 };

@@ -29,10 +29,11 @@ public class QuestionController {
     private final LessonRepository lessons;
     private final QuestionService service;
     private final QuestionReplyRepository replies;
+    private final CommentReactionRepository reactionRepo;
     private final RateLimiter limiter;
 
-    public QuestionController(QuestionRepository questions, LessonRepository lessons, QuestionService service, RateLimiter limiter, QuestionReplyRepository replies) {
-        this.replies = replies; this.questions = questions; this.lessons = lessons; this.service = service; this.limiter = limiter;
+    public QuestionController(QuestionRepository questions, LessonRepository lessons, QuestionService service, RateLimiter limiter, QuestionReplyRepository replies, CommentReactionRepository reactionRepo) {
+        this.reactionRepo = reactionRepo; this.replies = replies; this.questions = questions; this.lessons = lessons; this.service = service; this.limiter = limiter;
     }
 
     @PostMapping("/lessons/{lessonId}/questions") @ResponseStatus(HttpStatus.CREATED)
@@ -91,6 +92,52 @@ public class QuestionController {
         QuestionReply x = new QuestionReply(); x.setQuestionId(q.getId()); x.setUserId(me.getId()); x.setBody(r.body().trim());
         replies.save(x);
         return service.toDtos(List.of(q), me).get(0);
+    }
+
+    public record ReactionReq(@jakarta.validation.constraints.Min(-1) @jakarta.validation.constraints.Max(1) int value) {}
+
+    @PatchMapping("/questions/{id}") @Transactional
+    public QuestionService.QuestionDto edit(@PathVariable Long id, @Valid @RequestBody AskReq r) {
+        User me = CurrentUser.get();
+        Question q = questions.findById(id).filter(x -> x.getUserId().equals(me.getId()) && !"HIDDEN".equals(x.getStatus())).orElseThrow(() -> ApiException.notFound("Question not found"));
+        q.setBody(r.body().trim()); q.setEditedAt(java.time.Instant.now());
+        return service.toDtos(List.of(q), me).get(0);
+    }
+
+    @PatchMapping("/questions/{qid}/replies/{rid}") @Transactional
+    public QuestionService.QuestionDto editReply(@PathVariable Long qid, @PathVariable Long rid, @Valid @RequestBody ReplyReq r) {
+        User me = CurrentUser.get();
+        QuestionReply x = replies.findById(rid).filter(y -> y.getQuestionId().equals(qid) && y.getUserId().equals(me.getId()) && "VISIBLE".equals(y.getStatus())).orElseThrow(() -> ApiException.notFound("Reply not found"));
+        x.setBody(r.body().trim()); x.setEditedAt(java.time.Instant.now());
+        return service.toDtos(List.of(questions.findById(qid).orElseThrow()), me).get(0);
+    }
+
+    /** value: 1 like, -1 dislike, 0 clears. Only members of the question's gender group can react. */
+    @PutMapping("/questions/{id}/reaction") @Transactional
+    public QuestionService.QuestionDto react(@PathVariable Long id, @Valid @RequestBody ReactionReq r) {
+        User me = CurrentUser.get();
+        Gender g = GenderScope.requireLearnerGender(me);
+        Question q = questions.findVisibleTo(id, g).orElseThrow(() -> ApiException.notFound("Question not found"));
+        setReaction(me, "QUESTION", q.getId(), r.value());
+        return service.toDtos(List.of(q), me).get(0);
+    }
+
+    @PutMapping("/questions/{qid}/replies/{rid}/reaction") @Transactional
+    public QuestionService.QuestionDto reactReply(@PathVariable Long qid, @PathVariable Long rid, @Valid @RequestBody ReactionReq r) {
+        User me = CurrentUser.get();
+        Gender g = GenderScope.requireLearnerGender(me);
+        Question q = questions.findVisibleTo(qid, g).orElseThrow(() -> ApiException.notFound("Question not found"));
+        replies.findById(rid).filter(x -> x.getQuestionId().equals(q.getId()) && "VISIBLE".equals(x.getStatus())).orElseThrow(() -> ApiException.notFound("Reply not found"));
+        setReaction(me, "REPLY", rid, r.value());
+        return service.toDtos(List.of(q), me).get(0);
+    }
+
+    private void setReaction(User me, String type, Long id, int value) {
+        limiter.check("react:" + me.getId(), 120, Duration.ofMinutes(10));
+        var existing = reactionRepo.findByUserIdAndTargetTypeAndTargetId(me.getId(), type, id);
+        if (value == 0) { existing.ifPresent(reactionRepo::delete); return; }
+        CommentReaction c = existing.orElseGet(() -> { CommentReaction n = new CommentReaction(); n.setUserId(me.getId()); n.setTargetType(type); n.setTargetId(id); return n; });
+        c.setValue(value); reactionRepo.save(c);
     }
 
     @DeleteMapping("/questions/{qid}/replies/{rid}") @ResponseStatus(HttpStatus.NO_CONTENT) @Transactional

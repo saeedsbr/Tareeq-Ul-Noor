@@ -437,4 +437,9 @@ export const pt: Record<string, string> = {
   "Delete": "Eliminar",
   "Delete this question?": "Eliminar esta pergunta?",
   "Delete this reply?": "Eliminar esta resposta?",
+  "Discussion": "Discussão",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Converse sobre a aula com o seu professor e os colegas. Os nomes só são mostrados entre alunos do mesmo grupo.",
+  "Edited {date}": "Editado {date}",
+  "Like": "Gosto",
+  "Dislike": "Não gosto",
 };

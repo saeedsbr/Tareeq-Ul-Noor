@@ -437,4 +437,9 @@ export const ur: Record<string, string> = {
   "Delete": "حذف کریں",
   "Delete this question?": "یہ سوال حذف کریں؟",
   "Delete this reply?": "یہ جواب حذف کریں؟",
+  "Discussion": "مباحثہ",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "اپنے استاد اور ساتھی طلبہ کے ساتھ سبق پر گفتگو کریں۔ نام صرف ایک ہی گروپ کے طلبہ کے درمیان دکھائے جاتے ہیں۔",
+  "Edited {date}": "ترمیم شدہ {date}",
+  "Like": "پسند",
+  "Dislike": "ناپسند",
 };

@@ -12,6 +12,7 @@ public class Question {
     @Column(name = "lesson_id") private Long lessonId;
     @Column(columnDefinition = "TEXT") private String body;
     private String status = "SUBMITTED"; // SUBMITTED, ANSWERED, RESOLVED, HIDDEN
+    @Column(name = "edited_at") private Instant editedAt;
     @Column(name = "created_at") private Instant createdAt = Instant.now();
     @Column(name = "updated_at") private Instant updatedAt = Instant.now();
     @PreUpdate void touch() { updatedAt = Instant.now(); }

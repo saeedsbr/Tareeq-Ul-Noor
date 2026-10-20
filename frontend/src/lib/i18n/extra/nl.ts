@@ -437,4 +437,9 @@ export const nl: Record<string, string> = {
   "Delete": "Verwijderen",
   "Delete this question?": "Deze vraag verwijderen?",
   "Delete this reply?": "Deze reactie verwijderen?",
+  "Discussion": "Discussie",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "Bespreek de les met je docent en medeleerlingen. Namen zijn alleen zichtbaar tussen leerlingen van dezelfde groep.",
+  "Edited {date}": "Bewerkt {date}",
+  "Like": "Leuk",
+  "Dislike": "Niet leuk",
 };

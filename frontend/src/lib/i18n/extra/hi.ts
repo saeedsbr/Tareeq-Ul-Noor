@@ -437,4 +437,9 @@ export const hi: Record<string, string> = {
   "Delete": "हटाएँ",
   "Delete this question?": "यह प्रश्न हटाएँ?",
   "Delete this reply?": "यह उत्तर हटाएँ?",
+  "Discussion": "चर्चा",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "अपने शिक्षक और साथी शिक्षार्थियों के साथ पाठ पर चर्चा करें। नाम केवल एक ही समूह के शिक्षार्थियों के बीच दिखाए जाते हैं।",
+  "Edited {date}": "संपादित {date}",
+  "Like": "पसंद",
+  "Dislike": "नापसंद",
 };

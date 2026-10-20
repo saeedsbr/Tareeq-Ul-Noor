@@ -437,4 +437,9 @@ export const bn: Record<string, string> = {
   "Delete": "মুছুন",
   "Delete this question?": "এই প্রশ্ন মুছবেন?",
   "Delete this reply?": "এই উত্তর মুছবেন?",
+  "Discussion": "আলোচনা",
+  "Discuss the lesson with your teacher and fellow students. Names are shown only between students of the same gender group.": "শিক্ষক ও সহপাঠীদের সাথে পাঠ নিয়ে আলোচনা করুন। নাম শুধু একই গ্রুপের শিক্ষার্থীদের মধ্যে দেখানো হয়।",
+  "Edited {date}": "সম্পাদিত {date}",
+  "Like": "পছন্দ",
+  "Dislike": "অপছন্দ",
 };

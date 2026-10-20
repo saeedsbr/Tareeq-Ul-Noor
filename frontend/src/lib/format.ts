@@ -10,3 +10,11 @@ export function timeAgo(iso?: string | null): string {
 }
 export const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString(typeof document !== 'undefined' && document.documentElement.lang ? document.documentElement.lang : 'en') : '');
 export const statusLabel: Record<string, string> = { SUBMITTED: 'Pending', ANSWERED: 'Answered', RESOLVED: 'Resolved', HIDDEN: 'Hidden' };
+
+/** Recent items read "2 hours ago"; older ones read "October 6" (in the chosen language). */
+export function whenShort(iso?: string | null): string {
+  if (!iso) return '';
+  if (Date.now() - new Date(iso).getTime() < 7 * 86400000) return timeAgo(iso);
+  const lang = typeof document !== 'undefined' && document.documentElement.lang ? document.documentElement.lang : 'en';
+  return new Date(iso).toLocaleDateString(lang, { month: 'long', day: 'numeric' });
+}
