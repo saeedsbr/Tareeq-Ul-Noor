@@ -1,0 +1,46 @@
+# Tareeq Ul Noor — Dokploy "Docker Compose" deployment.
+# The MySQL database is external (a Dokploy database service or any MySQL 8 server); its details come from the environment.
+# Service names are prefixed (tun-) because dokploy-network is shared with every other app on the server.
+services:
+  tun-api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      ILMPATH_ADMIN_EMAIL: ${ILMPATH_ADMIN_EMAIL}
+      ILMPATH_ADMIN_PASSWORD: ${ILMPATH_ADMIN_PASSWORD}
+      ILMPATH_ADMIN_NAME: ${ILMPATH_ADMIN_NAME:-Administrator}
+      ILMPATH_SEED_DEMO: ${ILMPATH_SEED_DEMO:-false}
+    expose:
+      - "8080"
+    networks:
+      - internal
+      - dokploy-network   # lets the API reach a database service that lives on dokploy-network
+
+  tun-web:
+    build:
+      context: ./frontend
+      args:
+        API_URL: http://tun-api:8080
+    restart: unless-stopped
+    environment:
+      API_URL: http://tun-api:8080
+    depends_on:
+      tun-api:
+        condition: service_healthy
+    expose:
+      - "3000"
+    networks:
+      - internal
+      - dokploy-network   # Traefik (Dokploy domains) reaches the site through this network
+
+networks:
+  internal:
+  dokploy-network:
+    external: true

@@ -42,3 +42,12 @@ Terminate TLS in front of the web app (reverse proxy). Both services should be s
 
 ## Tests
 `cd backend && mvn test` (unit tests: scoring, progress, video allowlist). `cd frontend && npm run lint` (type-check) and `npm run build`.
+
+## Dokploy (Docker Compose)
+Files: `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `.env.example`.
+1. Create the MySQL 8 database (any MySQL server works; the user needs full rights on its schema so Flyway can create tables).
+2. In Dokploy create a **Compose** application from this GitHub repository (branch `main`, compose path `./docker-compose.yml`).
+3. Paste the variables from `.env.example` into the **Environment** tab and fill them in (DB_URL host/name, DB_USERNAME, DB_PASSWORD, JWT_SECRET, CORS_ORIGIN = your https URL, admin email/password).
+4. **Domains** tab: add your domain, service `tun-web`, port `3000`, HTTPS on. Do not expose `tun-api`; the website proxies `/api` to it internally.
+5. Deploy. Check `tun-api` logs for "Started IlmPathApplication", then open the domain and sign in as the admin.
+Notes: the API reads the real visitor IP from `X-Forwarded-For` (rate limits are per visitor). `ILMPATH_ADMIN_PASSWORD` is only used the first time (when no admin exists); remove it afterwards. Keep `ILMPATH_SEED_DEMO=false` in production. If the database is a Dokploy service on `dokploy-network`, use its internal hostname in `DB_URL`.

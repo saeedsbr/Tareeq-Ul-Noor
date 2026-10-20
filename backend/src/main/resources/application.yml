@@ -1,5 +1,7 @@
 server:
   port: 8080
+  # Behind Traefik/Next.js: use X-Forwarded-For so rate limits apply per visitor, not per proxy.
+  forward-headers-strategy: native
 spring:
   application:
     name: ilmpath-api
