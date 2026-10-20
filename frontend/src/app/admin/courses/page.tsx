@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { del, get, post, put } from '@/lib/api';
 import Modal from '@/components/Modal';
+import FileUpload from '@/components/FileUpload';
 import { Badge, Empty, ErrorBox, Spinner } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 
@@ -38,6 +39,7 @@ export default function AdminCourses() {
               <div><label className="label" htmlFor="s">{t("Status")}</label><select id="s" className="input" value={edit.status} onChange={(e) => setEdit({ ...edit, status: e.target.value })}>{['DRAFT', 'PUBLISHED', 'ARCHIVED'].map((x) => <option key={x} value={x}>{t(x)}</option>)}</select></div>
             </div>
             <div><label className="label" htmlFor="c">{t("Cover image URL (optional, must be licensed)")}</label><input id="c" type="url" className="input" value={edit.coverImageUrl ?? ''} onChange={(e) => setEdit({ ...edit, coverImageUrl: e.target.value })} /></div>
+            <FileUpload imagesOnly label={t("Upload cover image")} onUploaded={(f) => setEdit({ ...edit, coverImageUrl: f.url })} />
             <div className="flex justify-end gap-2"><button type="button" className="btn-secondary" onClick={() => setEdit(null)}>{t("Cancel")}</button><button className="btn-primary" disabled={save.isPending}>{t("Save")}</button></div>
           </form>
         </Modal>)}

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1")
 public class LessonController {
-    public record NoteDto(Long id, String kind, String title, String body) {}
+    public record NoteDto(Long id, String kind, String title, String body, String attachmentName, String attachmentUrl) {}
     public record ResourceDto(Long id, String title, String type, String contentOrUrl) {}
     public record CourseRef(Long id, String title, String slug) {}
     public record LessonDetail(Long id, String title, String description, String embedUrl, Integer durationMinutes, boolean completed,
@@ -58,8 +58,8 @@ public class LessonController {
             new CourseRef(c.getId(), c.getTitle(), c.getSlug()),
             all.stream().map(x -> new CatalogController.LessonSummary(x.getId(), x.getTitle(), x.getDescription(), x.getPosition(), x.getDurationMinutes(), done.contains(x.getId()))).toList(),
             idx > 0 ? all.get(idx - 1).getId() : null, idx < all.size() - 1 ? all.get(idx + 1).getId() : null,
-            ns.stream().filter(n -> "NOTE".equals(n.getKind())).map(n -> new NoteDto(n.getId(), n.getKind(), n.getTitle(), n.getBody())).toList(),
-            ns.stream().filter(n -> "BENEFIT".equals(n.getKind())).map(n -> new NoteDto(n.getId(), n.getKind(), n.getTitle(), n.getBody())).toList(),
+            ns.stream().filter(n -> "NOTE".equals(n.getKind())).map(n -> new NoteDto(n.getId(), n.getKind(), n.getTitle(), n.getBody(), n.getAttachmentName(), n.getAttachmentUrl())).toList(),
+            ns.stream().filter(n -> "BENEFIT".equals(n.getKind())).map(n -> new NoteDto(n.getId(), n.getKind(), n.getTitle(), n.getBody(), n.getAttachmentName(), n.getAttachmentUrl())).toList(),
             resources.findByLessonIdOrderByPositionAscIdAsc(id).stream().map(r -> new ResourceDto(r.getId(), r.getTitle(), r.getResourceType(), r.getContentOrUrl())).toList(),
             q == null ? null : q.getId(), q == null ? null : q.getTitle(), done.size(), all.size());
     }

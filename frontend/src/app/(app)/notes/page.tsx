@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Paperclip } from 'lucide-react';
 import { get } from '@/lib/api';
 import type { NoteItem } from '@/lib/types';
 import { Empty, ErrorBox, Spinner } from '@/components/ui';
@@ -26,6 +27,7 @@ export default function Notes() {
             <article key={n.id} className="card p-5">
               <div className="flex items-center justify-between gap-3"><h2 className="font-serif text-lg font-semibold">{n.title}</h2><span className="badge bg-sand-100 text-charcoal/70">{n.kind === 'BENEFIT' ? t("Benefit") : t("Note")}</span></div>
               <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{n.body}</p>
+              {n.attachmentUrl && <a href={n.attachmentUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 text-sm text-forest hover:underline"><Paperclip className="h-3.5 w-3.5" /> {n.attachmentName ?? t("Open file")}</a>}
               <p className="mt-3 text-xs text-muted">{n.lessonId ? <Link href={`/lessons/${n.lessonId}`} className="hover:underline">{n.courseTitle} · {n.lessonTitle}</Link> : n.courseTitle} · {timeAgo(n.updatedAt)}</p>
             </article>))}
       </div>

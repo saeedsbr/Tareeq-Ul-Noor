@@ -69,3 +69,6 @@ Health: `GET /actuator/health` (public); other Actuator endpoints are not expose
 | `GET /admin/audit-log?limit=` | recent admin actions |
 
 Learners without a gender receive `403 {"code":"GENDER_REQUIRED"}` everywhere except the endpoints listed in architecture.md.
+
+## File uploads (added)
+`POST /admin/files` (multipart field `file`, administrator only, max 25 MB) → `{id, name, url, contentType, size}`; allowed: PDF, PNG/JPG/WEBP/GIF, TXT, DOC(X), PPT(X), XLS(X), MP3, M4A, MP4 (extension allowlist plus content check). `GET /files/{id}`: images are public (course covers), every other file requires sign-in. Lesson resources use `type: "FILE"` with `contentOrUrl` = `/api/v1/files/{id}`; notes/benefits have `attachmentName` / `attachmentUrl`.

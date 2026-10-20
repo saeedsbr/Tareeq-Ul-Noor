@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { del, get, post, put } from '@/lib/api';
 import Modal from '@/components/Modal';
+import FileUpload from '@/components/FileUpload';
 import { Badge, Empty, ErrorBox, Spinner } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 
-type Note = { id?: number; kind?: string; title?: string; body?: string; lessonId?: number | null; courseId?: number | null; lessonTitle?: string; courseTitle?: string; status?: string };
+type Note = { attachmentName?: string | null; attachmentUrl?: string | null; id?: number; kind?: string; title?: string; body?: string; lessonId?: number | null; courseId?: number | null; lessonTitle?: string; courseTitle?: string; status?: string };
 type Lesson = { id: number; title: string; courseTitle: string };
 
 export default function AdminNotes() {
@@ -37,6 +38,9 @@ export default function AdminNotes() {
             </div>
             <div><label className="label" htmlFor="nt">{t("Title")}</label><input id="nt" required className="input" value={edit.title ?? ''} onChange={(e) => setEdit({ ...edit, title: e.target.value })} /></div>
             <div><label className="label" htmlFor="nb">{t("Content")}</label><textarea id="nb" required rows={8} className="input" value={edit.body ?? ''} onChange={(e) => setEdit({ ...edit, body: e.target.value })} /></div>
+            <div><p className="label">{t("Attachment")}</p>
+              {edit.attachmentUrl ? <p className="mb-2 flex items-center justify-between rounded-lg border border-line px-3 py-2 text-sm"><span className="truncate">{edit.attachmentName}</span><button type="button" className="btn-ghost p-1" onClick={() => setEdit({ ...edit, attachmentUrl: null, attachmentName: null })}>{t("Remove file")}</button></p> : null}
+              <FileUpload label={edit.attachmentUrl ? t("Replace file") : undefined} onUploaded={(f) => setEdit({ ...edit, attachmentUrl: f.url, attachmentName: f.name })} /></div>
             <div><label className="label" htmlFor="ns">{t("Status")}</label><select id="ns" className="input w-auto" value={edit.status} onChange={(e) => setEdit({ ...edit, status: e.target.value })}>{['DRAFT', 'PUBLISHED'].map((x) => <option key={x} value={x}>{t(x)}</option>)}</select></div>
             <div className="flex justify-end gap-2"><button type="button" className="btn-secondary" onClick={() => setEdit(null)}>{t("Cancel")}</button><button className="btn-primary" disabled={save.isPending}>{t("Save")}</button></div>
           </form>

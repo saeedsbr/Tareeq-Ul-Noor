@@ -47,3 +47,6 @@ lessons ─< lesson_resources ;  notes >─ lessons / courses ;  quizzes ─< qu
 - `admin_audit_log` (`admin_user_id`, `action`, `target`, `http_status`, `created_at`).
 - Question gender is not duplicated: it is derived from the asker's `users.gender` in queries.
 - Immutability is enforced in the application (see architecture.md); no database trigger is used because MySQL requires extra privileges for triggers when binary logging is on.
+
+## V3 — uploaded files (added)
+`uploaded_files` (`id` UUID, `original_name`, `stored_name`, `content_type`, `size_bytes`, `uploaded_by`, `created_at`); `notes.attachment_name`, `notes.attachment_url`. File bytes are stored on disk under `UPLOAD_DIR` (default `./uploads`), not in MySQL — in Docker mount a persistent volume at `/data/uploads`.

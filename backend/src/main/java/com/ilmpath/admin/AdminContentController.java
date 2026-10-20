@@ -25,11 +25,12 @@ public class AdminContentController {
 
     public record CourseReq(@NotBlank @Size(max = 200) String title, @Size(max = 5000) String description, @Size(max = 40) String level,
                             @Size(max = 500) String coverImageUrl, @Pattern(regexp = STATUS_RX) String status, Integer position) {}
-    public record ResourceReq(@NotBlank @Size(max = 200) String title, @Pattern(regexp = "LINK|PDF|REFERENCE") String type, @NotBlank String contentOrUrl) {}
+    public record ResourceReq(@NotBlank @Size(max = 200) String title, @Pattern(regexp = "LINK|PDF|REFERENCE|FILE") String type, @NotBlank String contentOrUrl) {}
     public record LessonReq(Long courseId, @NotBlank @Size(max = 200) String title, @Size(max = 5000) String description, String videoUrl,
                             Integer durationMinutes, Integer position, @Pattern(regexp = STATUS_RX) String status, List<ResourceReq> resources) {}
     public record NoteReq(Long courseId, Long lessonId, @Pattern(regexp = "NOTE|BENEFIT") String kind, @NotBlank @Size(max = 200) String title,
-                          @NotBlank @Size(max = 10000) String body, @Pattern(regexp = STATUS_RX) String status) {}
+                          @NotBlank @Size(max = 10000) String body, @Pattern(regexp = STATUS_RX) String status,
+                          @Size(max = 255) String attachmentName, @Pattern(regexp = "^(/api/v1/files/[0-9a-f-]{36})?$", message = "Invalid attachment") String attachmentUrl) {}
     public record LessonAdmin(Long id, Long courseId, String courseTitle, String title, String description, String videoUrl, Integer durationMinutes,
                               int position, String status, List<LessonController.ResourceDto> resources) {}
     public record CourseAdmin(Long id, String title, String slug, String description, String level, String coverImageUrl, String status, int position, long lessonCount) {}
@@ -173,7 +174,7 @@ public class AdminContentController {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", i.id()); m.put("kind", i.kind()); m.put("title", i.title()); m.put("body", i.body());
             m.put("lessonId", n.getLessonId()); m.put("courseId", n.getCourseId()); m.put("lessonTitle", i.lessonTitle());
-            m.put("courseTitle", i.courseTitle()); m.put("status", n.getStatus()); m.put("updatedAt", i.updatedAt());
+            m.put("courseTitle", i.courseTitle()); m.put("attachmentName", n.getAttachmentName()); m.put("attachmentUrl", n.getAttachmentUrl()); m.put("status", n.getStatus()); m.put("updatedAt", i.updatedAt());
             return m;
         }).toList();
     }
@@ -198,6 +199,8 @@ public class AdminContentController {
         if (r.lessonId() != null) lessons.findById(r.lessonId()).ifPresent(l -> n.setCourseId(l.getCourseId()));
         n.setKind(r.kind() == null ? "NOTE" : r.kind()); n.setTitle(r.title().trim()); n.setBody(r.body());
         n.setStatus(r.status() == null ? "DRAFT" : r.status());
+        boolean has = r.attachmentUrl() != null && !r.attachmentUrl().isBlank();
+        n.setAttachmentUrl(has ? r.attachmentUrl() : null); n.setAttachmentName(has ? r.attachmentName() : null);
     }
 
     @DeleteMapping("/notes/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) @Transactional

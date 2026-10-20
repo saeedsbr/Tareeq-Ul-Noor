@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1")
 public class NotesController {
-    public record NoteItem(Long id, String kind, String title, String body, Long lessonId, String lessonTitle, String courseTitle, java.time.Instant updatedAt) {}
+    public record NoteItem(Long id, String kind, String title, String body, String attachmentName, String attachmentUrl, Long lessonId, String lessonTitle, String courseTitle, java.time.Instant updatedAt) {}
 
     private final NoteRepository notes;
     private final LessonRepository lessons;
@@ -28,7 +28,7 @@ public class NotesController {
             Lesson l = n.getLessonId() == null ? null : ls.get(n.getLessonId());
             Long cid = l != null ? l.getCourseId() : n.getCourseId();
             Course c = cid == null ? null : cs.get(cid);
-            return new NoteItem(n.getId(), n.getKind(), n.getTitle(), n.getBody(), n.getLessonId(), l == null ? null : l.getTitle(), c == null ? null : c.getTitle(), n.getUpdatedAt());
+            return new NoteItem(n.getId(), n.getKind(), n.getTitle(), n.getBody(), n.getAttachmentName(), n.getAttachmentUrl(), n.getLessonId(), l == null ? null : l.getTitle(), c == null ? null : c.getTitle(), n.getUpdatedAt());
         }).toList();
     }
 

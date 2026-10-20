@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
     && useradd --system --uid 1001 --no-create-home app
 WORKDIR /app
 COPY --from=build /build/app.jar app.jar
+RUN mkdir -p /data/uploads && chown -R app:app /data
 USER app
-ENV TZ=UTC JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -Duser.timezone=UTC"
+ENV UPLOAD_DIR=/data/uploads TZ=UTC JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -Duser.timezone=UTC"
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 CMD curl -fsS http://localhost:8080/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

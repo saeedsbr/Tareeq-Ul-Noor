@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle2, ChevronLeft, ChevronRight, Circle, ExternalLink, Video } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, Circle, ExternalLink, FileText, Paperclip, Video } from 'lucide-react';
 import { ApiError, del, get, post, put } from '@/lib/api';
 import type { LessonDetail, QuestionDto } from '@/lib/types';
 import { Badge, ErrorBox, ProgressBar, Spinner } from '@/components/ui';
@@ -110,11 +110,11 @@ export default function LessonPage() {
             {(tab === 'Notes' || tab === 'Benefits') && (() => {
               const items = tab === 'Notes' ? l.notes : l.benefits;
               return items.length === 0 ? <p className="text-sm text-muted">{tab === 'Notes' ? t("No notes for this lesson yet.") : t("No benefits for this lesson yet.")}</p>
-                : <div className="space-y-4">{items.map((n) => <div key={n.id}><h3 className="text-sm font-semibold">{n.title}</h3><p className="mt-1 whitespace-pre-line text-sm leading-relaxed">{n.body}</p></div>)}</div>;
+                : <div className="space-y-4">{items.map((n) => <div key={n.id}><h3 className="text-sm font-semibold">{n.title}</h3><p className="mt-1 whitespace-pre-line text-sm leading-relaxed">{n.body}</p>{n.attachmentUrl && <a href={n.attachmentUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 text-sm text-forest hover:underline"><Paperclip className="h-3.5 w-3.5" /> {n.attachmentName ?? t("Open file")}</a>}</div>)}</div>;
             })()}
             {tab === 'Resources' && (l.resources.length === 0 ? <p className="text-sm text-muted">{t("No extra resources for this lesson.")}</p> : (
               <ul className="space-y-2">{l.resources.map((r) => <li key={r.id}>
-                {/^https?:\/\//.test(r.contentOrUrl) ? <a href={r.contentOrUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-forest hover:underline">{r.title} <ExternalLink className="h-3.5 w-3.5" /></a>
+                {/^(https?:\/\/|\/api\/v1\/files\/)/.test(r.contentOrUrl) ? <a href={r.contentOrUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-forest hover:underline">{r.title} {r.contentOrUrl.startsWith('/api/') ? <FileText className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}</a>
                   : <p className="text-sm"><strong>{r.title}:</strong> {r.contentOrUrl}</p>}</li>)}</ul>))}
             {tab === 'Questions' && <Ask lessonId={l.id} />}
             {tab === 'Quiz' && (l.quizId ? (

@@ -51,3 +51,6 @@ Files: `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `.env.
 4. **Domains** tab: add your domain, service `tun-web`, port `3000`, HTTPS on. Do not expose `tun-api`; the website proxies `/api` to it internally.
 5. Deploy. Check `tun-api` logs for "Started IlmPathApplication", then open the domain and sign in as the admin.
 Notes: the API reads the real visitor IP from `X-Forwarded-For` (rate limits are per visitor). `ILMPATH_ADMIN_PASSWORD` is only used the first time (when no admin exists); remove it afterwards. Keep `ILMPATH_SEED_DEMO=false` in production. If the database is a Dokploy service on `dokploy-network`, use its internal hostname in `DB_URL`.
+
+### Uploaded files
+Administrator uploads are stored in `UPLOAD_DIR` (`/data/uploads` in the images). `docker-compose.yml` mounts a named volume `uploads` there. For the single-container Dockerfile app, add a **Volume Mount** in Dokploy (Advanced → Volumes) with mount path `/data/uploads`, otherwise uploads are lost on every redeploy. Include that folder in your backups.

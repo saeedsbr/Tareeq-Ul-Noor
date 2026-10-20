@@ -35,9 +35,9 @@ COPY --from=web-build /app/.next/standalone web/
 COPY --from=web-build /app/.next/static web/.next/static
 COPY --from=web-build /app/public web/public
 COPY docker/start.sh /app/start.sh
-RUN chmod +x /app/start.sh && chown -R app:app /app
+RUN mkdir -p /data/uploads && chmod +x /app/start.sh && chown -R app:app /app /data
 USER app
-ENV TZ=UTC NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 API_URL=http://127.0.0.1:8080 \
+ENV UPLOAD_DIR=/data/uploads TZ=UTC NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 API_URL=http://127.0.0.1:8080 \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -Duser.timezone=UTC" NEXT_TELEMETRY_DISABLED=1
 EXPOSE 3000
 HEALTHCHECK --interval=20s --timeout=5s --start-period=90s --retries=5 CMD curl -fsS http://127.0.0.1:3000/login >/dev/null && curl -fsS http://127.0.0.1:8080/actuator/health >/dev/null || exit 1

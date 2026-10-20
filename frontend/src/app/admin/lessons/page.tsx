@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { del, get, post, put } from '@/lib/api';
 import Modal from '@/components/Modal';
+import FileUpload from '@/components/FileUpload';
+import { isStoredFile } from '@/lib/upload';
 import { Badge, Empty, ErrorBox, Spinner } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 
@@ -61,9 +63,10 @@ export default function AdminLessons() {
               {(edit.resources ?? []).map((r, i) => (
                 <div key={i} className="mb-2 grid grid-cols-[1fr_1.5fr_auto] gap-2">
                   <input aria-label={t("Resource title")} placeholder={t("Title")} className="input" value={r.title} onChange={(e) => { const rs = [...edit.resources!]; rs[i] = { ...r, title: e.target.value }; setEdit({ ...edit, resources: rs }); }} />
-                  <input aria-label={t("Resource link or text")} placeholder={t("https://… or text")} className="input" value={r.contentOrUrl} onChange={(e) => { const rs = [...edit.resources!]; rs[i] = { ...r, contentOrUrl: e.target.value }; setEdit({ ...edit, resources: rs }); }} />
+                  {isStoredFile(r.contentOrUrl) ? <span className="input flex items-center bg-sand-100/50 text-muted">{t("Uploaded file")}</span> : <input aria-label={t("Resource link or text")} placeholder={t("https://… or text")} className="input" value={r.contentOrUrl} onChange={(e) => { const rs = [...edit.resources!]; rs[i] = { ...r, contentOrUrl: e.target.value }; setEdit({ ...edit, resources: rs }); }} />}
                   <button type="button" aria-label={t("Remove resource")} className="btn-ghost p-2" onClick={() => setEdit({ ...edit, resources: edit.resources!.filter((_, j) => j !== i) })}><Trash2 className="h-4 w-4" /></button></div>))}
-              <button type="button" className="btn-ghost" onClick={() => setEdit({ ...edit, resources: [...(edit.resources ?? []), { title: '', type: 'LINK', contentOrUrl: '' }] })}><Plus className="h-4 w-4" /> {t("Add resource")}</button></div>
+              <button type="button" className="btn-ghost" onClick={() => setEdit({ ...edit, resources: [...(edit.resources ?? []), { title: '', type: 'LINK', contentOrUrl: '' }] })}><Plus className="h-4 w-4" /> {t("Add resource")}</button>
+              <div className="mt-2"><FileUpload onUploaded={(f) => setEdit({ ...edit, resources: [...(edit.resources ?? []), { title: f.name, type: 'FILE', contentOrUrl: f.url }] })} /></div></div>
             <div className="flex justify-end gap-2"><button type="button" className="btn-secondary" onClick={() => setEdit(null)}>{t("Cancel")}</button><button className="btn-primary" disabled={save.isPending}>{t("Save")}</button></div>
           </form>
         </Modal>)}

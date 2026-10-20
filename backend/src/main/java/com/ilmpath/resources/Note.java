@@ -13,6 +13,8 @@ public class Note {
     private String kind = "NOTE"; // NOTE | BENEFIT
     private String title;
     @Column(columnDefinition = "TEXT") private String body;
+    @Column(name = "attachment_name") private String attachmentName;
+    @Column(name = "attachment_url") private String attachmentUrl;
     private String status = "DRAFT";
     @Column(name = "created_by") private String createdBy;
     @Column(name = "created_at") private Instant createdAt = Instant.now();

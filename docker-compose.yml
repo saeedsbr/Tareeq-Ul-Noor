@@ -17,6 +17,9 @@ services:
       ILMPATH_ADMIN_PASSWORD: ${ILMPATH_ADMIN_PASSWORD}
       ILMPATH_ADMIN_NAME: ${ILMPATH_ADMIN_NAME:-Administrator}
       ILMPATH_SEED_DEMO: ${ILMPATH_SEED_DEMO:-false}
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - uploads:/data/uploads   # files uploaded by the administrator (PDFs, images, ...)
     expose:
       - "8080"
     networks:
@@ -39,6 +42,9 @@ services:
     networks:
       - internal
       - dokploy-network   # Traefik (Dokploy domains) reaches the site through this network
+
+volumes:
+  uploads:
 
 networks:
   internal:
