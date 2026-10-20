@@ -1,0 +1,10 @@
+.git
+.github
+**/node_modules
+**/.next
+**/target
+**/.env
+**/*.log
+docs
+infra
+frontend/ff.html
