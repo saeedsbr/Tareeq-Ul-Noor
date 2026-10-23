@@ -25,6 +25,8 @@ public class AdminAssessmentController {
     public record QuizAdmin(Long id, Long lessonId, String lessonTitle, String title, String instructions, int passPercentage, String status, int version,
                             boolean hasAttempts, List<QuestionAdmin> questions) {}
     public record GradeReq(@Min(0) int points, @Size(max = 2000) String feedback) {}
+    public record AttemptRow(Long attemptId, String learnerName, String learnerEmail, String gender, Long quizId, String quizTitle, int quizVersion,
+                             String lessonTitle, String status, Integer scoreAwarded, Integer scorePossible, java.math.BigDecimal percentage, Boolean passed, java.time.Instant submittedAt) {}
     public record PendingAttempt(Long attemptId, String learnerName, String quizTitle, java.time.Instant submittedAt) {}
 
     private final QuizRepository quizzes;
@@ -108,6 +110,25 @@ public class AdminAssessmentController {
     public void archive(@PathVariable Long id) { quizzes.findById(id).orElseThrow(() -> ApiException.notFound("Quiz not found")).setStatus("ARCHIVED"); }
 
     // ---- manual grading ----
+    /** Every submitted attempt (newest first), optionally for one quiz and/or one status (AWAITING_REVIEW, GRADED). */
+    @GetMapping("/attempts")
+    public List<AttemptRow> allAttempts(@RequestParam(required = false) Long quizId, @RequestParam(required = false) String status) {
+        var rows = attempts.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "submittedAt")).stream()
+            .filter(a -> !"IN_PROGRESS".equals(a.getStatus()))
+            .filter(a -> quizId == null || a.getQuizId().equals(quizId))
+            .filter(a -> status == null || status.isBlank() || a.getStatus().equals(status))
+            .limit(500).toList();
+        var us = users.findAllById(rows.stream().map(QuizAttempt::getUserId).collect(Collectors.toSet())).stream().collect(Collectors.toMap(com.ilmpath.identity.User::getId, x -> x));
+        var qz = quizzes.findAllById(rows.stream().map(QuizAttempt::getQuizId).collect(Collectors.toSet())).stream().collect(Collectors.toMap(Quiz::getId, x -> x));
+        var ls = lessons.findAllById(qz.values().stream().map(Quiz::getLessonId).collect(Collectors.toSet())).stream().collect(Collectors.toMap(com.ilmpath.courses.Lesson::getId, x -> x));
+        return rows.stream().map(a -> {
+            var u = us.get(a.getUserId()); var q = qz.get(a.getQuizId()); var l = q == null ? null : ls.get(q.getLessonId());
+            return new AttemptRow(a.getId(), u == null ? "" : u.getName(), u == null ? "" : u.getEmail(), u == null || u.getGender() == null ? null : u.getGender().name(),
+                a.getQuizId(), q == null ? "" : q.getTitle(), q == null ? 1 : q.getVersion(), l == null ? "" : l.getTitle(), a.getStatus(),
+                a.getScoreAwarded(), a.getScorePossible(), a.getPercentage(), a.getPassed(), a.getSubmittedAt());
+        }).toList();
+    }
+
     @GetMapping("/attempts/pending")
     public List<PendingAttempt> pending() {
         return attempts.findByStatusOrderBySubmittedAtAsc("AWAITING_REVIEW").stream().map(a -> new PendingAttempt(a.getId(),

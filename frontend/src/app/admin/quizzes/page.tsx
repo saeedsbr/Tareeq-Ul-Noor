@@ -23,19 +23,25 @@ function Grading({ id, onClose }: { id: number; onClose: () => void }) {
   const [vals, setVals] = useState<Record<number, { points: string; feedback: string }>>({});
   const grade = useMutation({
     mutationFn: ({ aid, points, feedback }: { aid: number; points: number; feedback: string }) => patch(`/admin/answers/${aid}/grade`, { points, feedback }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-attempt', id] }); qc.invalidateQueries({ queryKey: ['admin-pending'] }); qc.invalidateQueries({ queryKey: ['admin-overview'] }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-attempt', id] }); qc.invalidateQueries({ queryKey: ['admin-pending'] }); qc.invalidateQueries({ queryKey: ['admin-attempts'] }); qc.invalidateQueries({ queryKey: ['admin-overview'] }); },
   });
   return (
-    <Modal wide title={t("Grade written answers")} onClose={onClose}>
+    <Modal wide title={t("Quiz attempt")} onClose={onClose}>
       {r.isLoading ? <Spinner /> : r.isError ? <ErrorBox /> : (
         <div className="space-y-4"><p className="text-sm text-muted">{t("Status")}: {r.data!.status === 'GRADED' ? t("Final — {p}%", { p: Math.round(r.data!.percentage) }) : t("Awaiting review")}</p>
           {grade.isError && <ErrorBox message={(grade.error as Error).message} />}
-          {r.data!.questions.filter((q) => q.type !== 'MCQ').map((q) => {
+          {r.data!.questions.map((q) => {
+            if (q.type === 'MCQ') return (
+              <div key={q.questionId} className="rounded-lg border border-line p-4"><p className="text-sm font-semibold">{q.prompt} <span className="font-normal text-muted">({t("max {n}", { n: q.points })})</span></p>
+                <ul className="mt-2 space-y-1">{q.options.map((o) => (
+                  <li key={o.id} className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm ${o.correct ? 'border-emerald-300 bg-emerald-50' : o.id === q.selectedOptionId ? 'border-red-300 bg-red-50' : 'border-line'}`}>
+                    {o.text}{o.id === q.selectedOptionId && <span className="ms-auto text-xs text-muted">{t("Learner’s answer")}</span>}{o.correct && <span className="text-xs text-emerald-800">{t("Correct answer")}</span>}</li>))}</ul>
+                <p className="mt-2 text-xs text-muted">{t("Points")}: {q.awarded ?? 0} / {q.points}</p></div>);
             const v = vals[q.answerId!] ?? { points: q.awarded?.toString() ?? '', feedback: q.feedback ?? '' };
             return (
               <div key={q.questionId} className="rounded-lg border border-line p-4"><p className="text-sm font-semibold">{q.prompt} <span className="font-normal text-muted">({t("max {n}", { n: q.points })})</span></p>
                 <p className="mt-2 whitespace-pre-line rounded-lg bg-sand-100/60 p-3 text-sm">{q.textAnswer || <em className="text-muted">{t("No answer")}</em>}</p>
-                {q.modelAnswer && <p className="mt-2 text-xs text-muted">Model answer: {q.modelAnswer}</p>}
+                {q.modelAnswer && <p className="mt-2 text-xs text-muted">{t("Model answer: {text}", { text: q.modelAnswer })}</p>}
                 <div className="mt-3 grid gap-2 sm:grid-cols-[100px_1fr_auto]">
                   <input aria-label={t("Points")} type="number" min={0} max={q.points} className="input" placeholder={t("Points")} value={v.points} onChange={(e) => setVals({ ...vals, [q.answerId!]: { ...v, points: e.target.value } })} />
                   <input aria-label={t("Feedback")} className="input" placeholder={t("Feedback (optional)")} value={v.feedback} onChange={(e) => setVals({ ...vals, [q.answerId!]: { ...v, feedback: e.target.value } })} />
@@ -43,6 +49,35 @@ function Grading({ id, onClose }: { id: number; onClose: () => void }) {
               </div>);
           })}</div>)}
     </Modal>
+  );
+}
+
+type Row = { attemptId: number; learnerName: string; learnerEmail: string; gender?: string; quizId: number; quizTitle: string; quizVersion: number; lessonTitle: string; status: string; scoreAwarded?: number; scorePossible?: number; percentage?: number; passed?: boolean; submittedAt: string };
+
+function Attempts({ quizzes, onReview }: { quizzes: Quiz[]; onReview: (id: number) => void }) {
+  const { t } = useI18n();
+  const [quizId, setQuizId] = useState(''); const [status, setStatus] = useState('');
+  const q = useQuery({ queryKey: ['admin-attempts', quizId, status], queryFn: () => get<Row[]>(`/admin/attempts?${new URLSearchParams({ ...(quizId ? { quizId } : {}), ...(status ? { status } : {}) })}`) });
+  return (
+    <section aria-labelledby="att">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><h2 id="att" className="h2">{t("Quiz attempts")}</h2>
+        <div className="flex gap-2">
+          <label className="sr-only" htmlFor="aq">{t("Quiz")}</label>
+          <select id="aq" className="input w-auto" value={quizId} onChange={(e) => setQuizId(e.target.value)}><option value="">{t("All quizzes")}</option>{quizzes.map((z) => <option key={z.id} value={z.id}>{z.title}</option>)}</select>
+          <label className="sr-only" htmlFor="as">{t("Status")}</label>
+          <select id="as" className="input w-auto" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">{t("All statuses")}</option><option value="AWAITING_REVIEW">{t("Awaiting review")}</option><option value="GRADED">{t("Graded")}</option></select></div></div>
+      {q.isLoading ? <Spinner /> : q.isError ? <ErrorBox retry={() => q.refetch()} /> : q.data!.length === 0 ? <Empty title={t("No attempts yet")} hint={t("Submitted quiz attempts will appear here.")} /> : (
+        <div className="card overflow-x-auto"><table className="w-full text-start text-sm"><thead className="border-b border-line text-xs text-muted"><tr>
+          <th className="p-3 text-start">{t("Learner")}</th><th className="text-start">{t("Quiz")}</th><th className="text-start">{t("Score")}</th><th className="text-start">{t("Status")}</th><th className="text-start">{t("Submitted")}</th><th /></tr></thead>
+          <tbody className="divide-y divide-line">{q.data!.map((a) => (
+            <tr key={a.attemptId}>
+              <td className="p-3"><p className="font-medium">{a.learnerName}</p><p className="text-xs text-muted">{a.learnerEmail}{a.gender && ` · ${a.gender === 'MALE' ? t('Male') : t('Female')}`}</p></td>
+              <td><p>{a.quizTitle} <span className="text-xs text-muted">v{a.quizVersion}</span></p><p className="text-xs text-muted">{a.lessonTitle}</p></td>
+              <td>{a.scoreAwarded ?? 0} / {a.scorePossible ?? 0}{a.percentage != null && <span className="text-xs text-muted"> ({Math.round(a.percentage)}%)</span>}</td>
+              <td>{a.status === 'AWAITING_REVIEW' ? <Badge kind="SUBMITTED">{t("Awaiting review")}</Badge> : a.passed ? <Badge kind="PUBLISHED">{t("Passed")}</Badge> : <Badge kind="SUSPENDED">{t("Not passed")}</Badge>}</td>
+              <td className="whitespace-nowrap text-xs text-muted">{new Date(a.submittedAt).toLocaleString()}</td>
+              <td className="pe-3 text-end"><button className="btn-secondary" onClick={() => onReview(a.attemptId)}>{t("Review")}</button></td></tr>))}</tbody></table></div>)}
+    </section>
   );
 }
 
@@ -75,6 +110,8 @@ export default function AdminQuizzes() {
           <div key={z.id} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="font-medium">{z.title}</p><p className="text-xs text-muted">{z.lessonTitle} · v{z.version} · {t("Questions: {n}", { n: z.questions.length })}</p></div>
             <Badge>{z.status}</Badge><button className="btn-secondary" onClick={() => { setErr(''); setEdit(z); }}>{t("Edit")}</button>
             <button className="btn-danger" onClick={() => confirm(t('Archive this quiz? Past attempts are kept.')) && archive.mutate(z.id!)}>{t("Archive")}</button></div>))}</div>)}</section>
+
+      <Attempts quizzes={quizzes.data ?? []} onReview={setGrading} />
 
       {grading && <Grading id={grading} onClose={() => setGrading(null)} />}
       {edit && (

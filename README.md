@@ -3,8 +3,12 @@
 ```
 backend/   Spring Boot 3 (Java 21) modular monolith · MySQL 8 · Flyway
 frontend/  Next.js 14 (App Router) · TypeScript · Tailwind · TanStack Query
-infra/     MySQL setup SQL and optional docker-compose
+infra/     MySQL scripts (schema.sql, dev-mysql.sh)
+docs/      requirements, architecture, API, database, design system, i18n, deployment
+Dockerfile · docker-compose.yml · .env.example   deployment (Dokploy-ready)
 ```
+
+Features: courses and lessons with YouTube video, progress, quizzes with server-side scoring, notes and downloadable files, a comment-style lesson **Discussion**, **gender-separated** questions and discussion rooms, five colour themes, 14 languages (Arabic/Urdu RTL), and an admin area with file uploads and an audit log. See `docs/README.md`.
 
 ## Quick start without a MySQL password
 ```
@@ -16,7 +20,7 @@ cd frontend && npm run dev  # web on :3000
 
 ## Run locally
 
-1. **MySQL** — either `mysql -u root -p < infra/mysql-setup.sql` (edit the password first) or `docker compose -f infra/docker-compose.yml up -d`.
+1. **MySQL** — `mysql -u root -p < infra/schema.sql` (creates the database, the `ilmpath` user and all tables; edit the password first) or `docker compose -f infra/docker-compose.yml up -d`.
 2. **API** (port 8080) — set the variables from `backend/.env.example`, then:
    ```
    cd backend
@@ -42,8 +46,12 @@ cd frontend && npm run dev  # web on :3000
 
 Sign in as the admin at `/login` → `/admin`. Add YouTube URLs to lessons there (demo content has none).
 
+## Deployment
+See `docs/deployment-runbook.md` (Dokploy: Compose app with `docker-compose.yml`, or a single-container app with the root `Dockerfile`; both need a persistent volume at `/data/uploads`).
+
 ## Notes
 - Quiz scoring, progress, publication rules and authorization are enforced in the backend; MCQ answer keys are never sent before submission.
 - Editing a quiz that already has attempts creates a new version; old attempts keep their original questions.
 - Password-reset links are written to the API log until an email provider is configured.
 - Set `COOKIE_SECURE=true` behind HTTPS.
+- Learners choose Male/Female once; it cannot be changed, and questions and discussion rooms are separated by it in the backend.

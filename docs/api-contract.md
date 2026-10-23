@@ -1,80 +1,47 @@
 # REST API (as implemented)
 
-Base path `/api/v1`. JSON only. Interactive docs: `/swagger-ui.html`, spec at `/v3/api-docs`. Auth is the `ilm_token` HttpOnly cookie (or `Authorization: Bearer`).
+Base path `/api/v1`, JSON only (uploads are `multipart/form-data`). Interactive docs: `/swagger-ui.html`. Auth: `ilm_token` HttpOnly cookie (or `Authorization: Bearer`).
 
-**Errors:** `{ "timestamp", "status", "message", "fields"? }` — 400 validation (`fields` maps field → message), 401 not signed in, 403 forbidden, 404 not found, 409 conflict, 429 rate-limited, 500 generic (details only in server log).
+**Errors:** `{timestamp, status, message, fields?, code?}` — 400 validation, 401 not signed in, 403 forbidden (`code: "GENDER_REQUIRED"` for learners without a gender), 404 not found *(also used when the resource belongs to the other gender group)*, 409 conflict, 429 rate-limited, 500 generic.
 
-## Auth (public)
-| Method & path | Notes |
+## Auth and profile
+`POST /auth/register {name,email,password,gender}` · `POST /auth/login` · `POST /auth/logout` · `POST /auth/forgot-password` · `POST /auth/reset-password` · `GET /me` (includes `gender`) · `PATCH /me {name}` · `PUT /me/password {currentPassword,newPassword}` · `PUT /me/gender {gender}` (once only; 409 if already set).
+
+## Catalogue and learning (signed in unless noted)
+`GET /courses?q=` and `GET /courses/{slug}` (public) · `GET /lessons/{id}` · `PUT|DELETE /lessons/{id}/completion` · `GET /me/progress` · `GET /me/courses` · `GET /notes` (notes and benefits, with `attachmentName/Url`).
+
+## Lesson Discussion (same gender group only)
+| Endpoint | Notes |
 |---|---|
-| `POST /auth/register` | `{name,email,password(8–72)}` → user; signs in |
-| `POST /auth/login` | `{email,password}` → user |
-| `POST /auth/logout` | clears cookie, 204 |
-| `POST /auth/forgot-password` | always 202 (does not reveal whether the email exists); link logged on server |
-| `POST /auth/reset-password` | `{token,password}` |
-| `GET /me`, `PATCH /me` | current user; update name |
+| `GET /lessons/{id}/questions` | the group's comments, newest first, with replies, `likes`, `myReaction`, `mine`, `editedAt` (admin: all) |
+| `POST /lessons/{id}/questions {body}` | new comment (5–2000 chars) |
+| `PATCH /questions/{id} {body}` · `DELETE /questions/{id}` | own comment only (delete = hide) |
+| `POST /questions/{id}/replies {body}` | any learner of the group (admins use the admin route) |
+| `PATCH` / `DELETE /questions/{qid}/replies/{rid}` | own reply only |
+| `PUT /questions/{id}/reaction`, `PUT /questions/{qid}/replies/{rid}/reaction {value: 1\|-1\|0}` | like / dislike / clear |
+| `GET /me/questions` · `GET /community/questions?q=` · `GET /questions/{id}` · `PATCH /questions/{id}/resolve` | the Questions page: mine / my group's (search) / one / mark resolved |
 
-## Catalogue
-| `GET /courses?q=` | published courses with lesson count; progress fields when signed in |
-|---|---|
-| `GET /courses/{slug}` | course, published lessons, `continueLessonId`, per-lesson `completed` |
+Anything belonging to the other group returns 404.
 
-## Learning (signed in)
-| Method & path | Notes |
-|---|---|
-| `GET /lessons/{id}` | lesson, embed URL, sibling lessons, prev/next, notes, benefits, resources, quiz id, counts |
-| `PUT /lessons/{id}/completion` | mark complete (idempotent) |
-| `DELETE /lessons/{id}/completion` | undo |
-| `GET /me/progress` | dashboard: stats, overall %, continue-learning, courses, activity, latest notes, recent questions |
-| `GET /me/courses` | courses the learner has started |
-| `GET /notes` | published notes and benefits library |
+## Discussion rooms (learners, own group)
+`GET /rooms` · `GET /rooms/{id}` · `GET /rooms/{id}/posts?q=` · `POST /rooms/{id}/posts {body,parentId?}` · `DELETE /rooms/{roomId}/posts/{postId}` (own).
 
-## Questions (signed in, own data only)
-`POST /lessons/{id}/questions {body 5–2000}` · `GET /lessons/{id}/questions` · `GET /me/questions` · `GET /questions/{id}` · `PATCH /questions/{id}/resolve`
+## Quizzes
+`GET /lessons/{lessonId}/quiz` · `GET /quizzes/{id}` (no answer keys) · `POST /quizzes/{id}/attempts` · `PUT /attempts/{id}/answers` · `POST /attempts/{id}/submit` (idempotent) · `GET /attempts/{id}/result`.
 
-## Quizzes (signed in)
-| Method & path | Notes |
-|---|---|
-| `GET /lessons/{lessonId}/quiz`, `GET /quizzes/{id}` | questions and options **without** correct flags; own attempt history |
-| `POST /quizzes/{id}/attempts` | start or resume; returns saved answers |
-| `PUT /attempts/{id}/answers` | `{answers:[{questionId,optionId?,text?}]}`, 204 |
-| `POST /attempts/{id}/submit` | scores; idempotent |
-| `GET /attempts/{id}/result` | score, status (`AWAITING_REVIEW`/`GRADED`), per-question review incl. correct options |
+## Files
+`GET /files/{id}` — images public, other files need sign-in; PDFs/images inline, others as downloads. Upload is admin-only (below).
 
-## Admin (`ROLE_ADMIN` only)
+## Administrator (`ROLE_ADMIN`; every non-GET call is written to the audit log)
 | Area | Endpoints |
 |---|---|
 | Courses | `GET/POST /admin/courses`, `PUT /admin/courses/{id}`, `DELETE` = archive |
-| Lessons | `GET /admin/lessons[?courseId]`, `GET/PUT/DELETE /admin/lessons/{id}`, `POST /admin/lessons`, `PUT /admin/courses/{id}/lessons/order` (array of ids) |
-| Notes | `GET/POST /admin/notes`, `PUT/DELETE /admin/notes/{id}` |
-| Quizzes | `GET/POST /admin/quizzes`, `GET/PUT/DELETE /admin/quizzes/{id}` (versioning on edit) |
-| Grading | `GET /admin/attempts/pending`, `GET /admin/attempts/{id}`, `PATCH /admin/answers/{id}/grade {points,feedback}` |
+| Lessons | `GET /admin/lessons[?courseId]`, `GET/PUT/DELETE /admin/lessons/{id}`, `POST /admin/lessons`, `PUT /admin/courses/{id}/lessons/order` |
+| Notes | `GET/POST /admin/notes`, `PUT/DELETE /admin/notes/{id}` (optional `attachmentName`, `attachmentUrl` = `/api/v1/files/{uuid}`) |
+| Files | `POST /admin/files` (field `file`, ≤ 25 MB; PDF, PNG/JPG/WEBP/GIF, TXT, DOC(X), PPT(X), XLS(X), MP3, M4A, MP4) → `{id,name,url,contentType,size}` |
+| Quizzes | `GET/POST /admin/quizzes`, `GET/PUT/DELETE /admin/quizzes/{id}`; attempts: `GET /admin/attempts[?quizId&status]` (all submitted attempts with learner, gender, score, status), `GET /admin/attempts/pending`, grading: `GET /admin/attempts/{id}`, `PATCH /admin/answers/{id}/grade` |
 | Questions | `GET /admin/questions[?status]`, `POST /admin/questions/{id}/replies`, `PATCH /admin/questions/{id}/status` |
-| Users | `GET /admin/users`, `PATCH /admin/users/{id}/status` (the admin account can't be suspended) |
-| Reports | `GET /admin/reports/overview` |
+| Rooms | `GET/POST /admin/rooms`, `PUT /admin/rooms/{id}`, `GET/POST /admin/rooms/{id}/posts`, `PATCH /admin/posts/{id}/status` |
+| Users and reports | `GET /admin/users` (with gender), `PATCH /admin/users/{id}/status`, `GET /admin/reports/overview`, `GET /admin/audit-log?limit=` |
 
-Health: `GET /actuator/health` (public); other Actuator endpoints are not exposed.
-
-## Gender separation (added)
-| Method & path | Notes |
-|---|---|
-| `POST /auth/register` | now requires `gender` (`MALE`/`FEMALE`) |
-| `PUT /me/gender` | one-time selection for accounts without a gender; 409 if already set |
-| `GET /me` | includes `gender` |
-| `GET /community/questions?q=` | questions from the caller's gender group only (learners) |
-| `GET /lessons/{id}/questions` | the group's questions for that lesson (administrator: all) |
-| `GET /questions/{id}` | 404 unless the asker is in the caller's group |
-| `GET /rooms`, `GET /rooms/{id}`, `GET /rooms/{id}/posts?q=`, `POST /rooms/{id}/posts`, `DELETE /rooms/{roomId}/posts/{postId}` | learner discussion rooms, own group only |
-| `GET/POST /admin/rooms`, `PUT /admin/rooms/{id}`, `GET/POST /admin/rooms/{id}/posts`, `PATCH /admin/posts/{id}/status` | administrator, both groups |
-| `GET /admin/audit-log?limit=` | recent admin actions |
-
-Learners without a gender receive `403 {"code":"GENDER_REQUIRED"}` everywhere except the endpoints listed in architecture.md.
-
-## File uploads (added)
-`POST /admin/files` (multipart field `file`, administrator only, max 25 MB) → `{id, name, url, contentType, size}`; allowed: PDF, PNG/JPG/WEBP/GIF, TXT, DOC(X), PPT(X), XLS(X), MP3, M4A, MP4 (extension allowlist plus content check). `GET /files/{id}`: images are public (course covers), every other file requires sign-in. Lesson resources use `type: "FILE"` with `contentOrUrl` = `/api/v1/files/{id}`; notes/benefits have `attachmentName` / `attachmentUrl`.
-
-## Comment-style questions (added)
-The lesson Questions tab works like video comments: one box to post, replies under each comment. `POST /questions/{id}/replies {body}` (any learner of the same gender group; administrators use `/admin/questions/{id}/replies`), `DELETE /questions/{qid}/replies/{rid}` and `DELETE /questions/{id}` (own items only; hidden, not erased). Reply objects: `{id, body, authorName, teacher, mine, createdAt}`. Migration V4 renames `question_replies.admin_user_id` to `user_id` and adds `status`.
-
-## Discussion section (added)
-The comments now sit in a "Discussion" section under every lesson (not a tab). Extra endpoints: `PATCH /questions/{id}` and `PATCH /questions/{qid}/replies/{rid}` (edit own text; `editedAt` is returned), `PUT /questions/{id}/reaction` and `PUT /questions/{qid}/replies/{rid}/reaction` with `{value: 1 | -1 | 0}` (like / dislike / clear; same gender group only). Comments and replies include `likes` and `myReaction`. Migration V5 adds `comment_reactions` and `edited_at` columns.
+Health: `GET /actuator/health` (public, used by container health checks).

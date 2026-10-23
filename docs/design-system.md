@@ -1,26 +1,29 @@
 # Design system
 
-## Colours (Tailwind tokens in `frontend/tailwind.config.ts`)
-| Token | Hex | Use |
-|---|---|---|
-| `forest` | #164E3B | primary actions, active nav, progress |
-| `deep` | #0D3329 | hero panels, footer, dark surfaces |
-| `ivory` | #F7F5EF | page background |
-| `sand` | #E5D5B5 | restrained decorative accents (`sand-100` #F3ECDC for soft fills) |
-| `white` | #FFFFFF | cards |
-| `charcoal` | #202520 | body text |
-| `muted` / `line` | #6B726C / #E7E3D8 | metadata, borders |
+## Colour themes
+Colours are CSS variables (space-separated RGB) in `frontend/src/app/globals.css`, exposed to Tailwind in `tailwind.config.ts` (`forest`, `deep`, `ivory`, `sand`). A theme is selected with `data-theme` on `<html>`; the choice is stored in `localStorage` (`tun-theme`) and applied by an inline script before first paint.
+
+| Theme (`data-theme`) | Primary | Deep | Ivory | Sand |
+|---|---|---|---|---|
+| Forest Green (`forest`, default) | #164E3B | #0D3329 | #F7F5EF | #E5D5B5 |
+| Rose Pink (`rose`) | #A3295F | #5E1238 | #FBF4F6 | #F0D3DC |
+| Royal Purple (`purple`) | #5B3A9B | #2E1A55 | #F7F4FB | #DCCFF0 |
+| Ocean Blue (`ocean`) | #1D5C8A | #0C2F4A | #F3F7FA | #CFE0EC |
+| Sunset Amber (`sunset`) | #B4561F | #5C2A0B | #FBF6F0 | #F0D9BD |
+
+Charcoal text (#202520), muted grey and the thin neutral borders are shared by all themes. The landing-page mosque illustration keeps its sunset colours in every theme. Users pick a theme under **Profile → Colour theme** (per device).
 
 ## Typography
-Inter (UI), Source Serif 4 (headings), Noto Naskh Arabic (Arabic text, `font-arabic`). Arabic blocks use `dir="rtl" lang="ar"`.
+Inter (interface), Source Serif 4 (headings), Noto Naskh Arabic (Arabic and Urdu body text and quotations, `font-arabic`; Arabic blocks use `dir="rtl" lang="ar"`). Fonts are fetched from Google Fonts at build time.
 
-## Components (`globals.css` + `components/`)
-`.btn-primary/secondary/ghost/danger`, `.card`, `.input`, `.label`, `.badge`, `.pattern` (subtle geometric SVG used only on hero/footer/empty states, never behind reading text), `ProgressBar`, `Badge`, `Empty`, `ErrorBox`, `Spinner`, `Modal`, `CourseCard`.
+## Components
+`.btn-primary/secondary/ghost/danger`, `.card`, `.input`, `.badge`, `.pattern` (subtle geometric SVG, only on hero/footer/empty states), `ProgressBar`, `Badge`, `Empty`, `ErrorBox`, `Spinner`, `Modal`, `CourseCard`, `FileUpload`, `LessonComments` (comment-style Discussion: gradient avatars, like/dislike, reply, edit, delete, nested replies in a tinted box).
 
-Course covers use a green/sand gradient with geometric pattern when no licensed image URL is set.
+## Motion
+Slow rotating geometric shapes, drifting glows, twinkling dots and a floating Arabic watermark on the hero/footer/auth panel; sections fade up on scroll; hover lifts on cards. All animation is disabled when the visitor prefers reduced motion.
 
 ## Accessibility
-Visible focus ring, labelled controls (`sr-only` labels where visually hidden), `aria-current` on navigation, `role="tablist/tab"`, `role="progressbar"`, dialogs with `aria-modal` and Escape-to-close, live regions for status messages, reduced-motion respected, keyboard-operable quiz navigation. Manual screen-reader and device testing is still to do.
+Visible focus ring, labelled controls, `aria-current` on navigation, tab/radio roles, `role="progressbar"`, modal dialogs with Escape, live regions for status messages, keyboard-operable quiz. Submit buttons stay disabled until the page is interactive. Manual screen-reader and real-device testing is still to do.
 
-## Responsive behaviour
-Sidebar at ≥1024px; below that a top bar plus fixed bottom navigation. Grids collapse from 4 → 2 → 1 columns.
+## Responsive and right-to-left
+Sidebar from 1024 px; below that a top bar plus a fixed bottom navigation. Layout uses logical utilities (`ms-`, `ps-`, `start-`, `border-e`, `rtl:rotate-180`) so Arabic and Urdu mirror correctly (sidebar, header, search icon, hero scene, arrows).

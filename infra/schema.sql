@@ -1,6 +1,6 @@
--- IlmPath full database schema (MySQL 8). Same as backend/src/main/resources/db/migration/V1 + V2.
+-- IlmPath full database schema (MySQL 8). Same as backend/src/main/resources/db/migration/V1 … V5.
 -- Run as a MySQL admin:  mysql -u root -p < infra/schema.sql
--- Edit the password below first. The API's Flyway setup recognises an already-created schema (baseline version 2).
+-- Edit the password below first. The API's Flyway setup recognises an already-created schema (baseline version 5).
 CREATE DATABASE IF NOT EXISTS ilmpath CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 CREATE USER IF NOT EXISTS 'ilmpath'@'localhost' IDENTIFIED BY 'change-this-password';
 GRANT ALL PRIVILEGES ON ilmpath.* TO 'ilmpath'@'localhost';
@@ -229,3 +229,39 @@ CREATE TABLE admin_audit_log (
 INSERT INTO discussion_rooms (gender, title, description, status, created_at) VALUES
   ('MALE', 'Brothers’ general discussion', 'A space for brothers to discuss lessons and share benefits.', 'ACTIVE', UTC_TIMESTAMP(6)),
   ('FEMALE', 'Sisters’ general discussion', 'A space for sisters to discuss lessons and share benefits.', 'ACTIVE', UTC_TIMESTAMP(6));
+
+CREATE TABLE uploaded_files (
+  id VARCHAR(36) PRIMARY KEY,
+  original_name VARCHAR(255) NOT NULL,
+  stored_name VARCHAR(80) NOT NULL,
+  content_type VARCHAR(120) NOT NULL,
+  size_bytes BIGINT NOT NULL,
+  uploaded_by VARCHAR(36) NOT NULL,
+  created_at DATETIME(6) NOT NULL,
+  CONSTRAINT fk_files_user FOREIGN KEY (uploaded_by) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE notes
+  ADD COLUMN attachment_name VARCHAR(255) NULL,
+  ADD COLUMN attachment_url VARCHAR(300) NULL;
+
+-- Replies can now come from any member of the same gender group, not only the administrator.
+ALTER TABLE question_replies RENAME COLUMN admin_user_id TO user_id;
+ALTER TABLE question_replies ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'VISIBLE';
+
+CREATE TABLE comment_reactions (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  target_type VARCHAR(10) NOT NULL,
+  target_id BIGINT NOT NULL,
+  value TINYINT NOT NULL,
+  created_at DATETIME(6) NOT NULL,
+  CONSTRAINT chk_reaction_value CHECK (value IN (-1, 1)),
+  CONSTRAINT chk_reaction_type CHECK (target_type IN ('QUESTION', 'REPLY')),
+  CONSTRAINT fk_reaction_user FOREIGN KEY (user_id) REFERENCES users(id),
+  UNIQUE KEY uq_reaction (user_id, target_type, target_id),
+  INDEX idx_reaction_target (target_type, target_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE questions ADD COLUMN edited_at DATETIME(6) NULL;
+ALTER TABLE question_replies ADD COLUMN edited_at DATETIME(6) NULL;

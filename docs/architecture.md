@@ -1,69 +1,52 @@
 # Architecture
 
 ```
-Browser (learner / admin)
-   │ HTTPS
-   ▼
-Next.js 14 (App Router, TypeScript, Tailwind)      port 3000
-   │  /api/* rewritten to the API (same origin → HttpOnly cookie works)
-   ▼
-Spring Boot 3.2 modular monolith (Java 21)         port 8080
-   │ JPA + Flyway
-   ▼
-MySQL 8
+Browser ──HTTPS──▶ Traefik (Dokploy) ──▶ Next.js 14  (port 3000)
+                                              │  /api/* rewritten to the API (same origin → HttpOnly cookie)
+                                              ▼
+                                   Spring Boot 3.2 / Java 21 (port 8080, internal only)
+                                              │ JPA + Flyway          │ files on disk (UPLOAD_DIR)
+                                              ▼
+                                           MySQL 8
 ```
-
-The frontend displays data and collects input. The backend is authoritative for permissions, progress, scoring, publication status and validation.
+The frontend collects input and displays data. The backend is authoritative for permissions, gender scoping, progress, scoring, publication status and validation.
 
 ## Repository
-```
-backend/    Spring Boot API (com.ilmpath.*)
-frontend/   Next.js app (src/app, src/components, src/lib)
-infra/      mysql-setup.sql, docker-compose.yml (MySQL only)
-docs/       this documentation
-```
+`backend/` Spring Boot API (`com.ilmpath.*`) · `frontend/` Next.js app · `infra/` MySQL scripts (`schema.sql`, `dev-mysql.sh`, compose for MySQL only) · `docs/` · root `Dockerfile` (single image), `docker-compose.yml` (two services), `docker/start.sh`.
 
 ## Backend modules (`backend/src/main/java/com/ilmpath`)
 | Package | Responsibility |
 |---|---|
-| `identity` | Users, roles, registration/login/logout, password reset, JWT cookie filter, security config, admin seeder, optional demo seeder |
-| `courses` | Courses, lessons, lesson resources; public catalogue (`CatalogController`) and lesson player data (`LessonController`) |
-| `progress` | Lesson completions, progress calculation (`ProgressService`), learner dashboard |
-| `questions` | Lesson-linked questions, admin replies, DTO mapping |
-| `assessments` | Quizzes, versions, questions, options, attempts, answers, scoring and grading (`AssessmentService`) |
-| `resources` | Notes and benefits, learner library |
-| `admin` | Admin-only controllers: content, assessments/grading, questions/users/reports |
-| `common` | `ApiException`, global error handler, in-memory `RateLimiter`, YouTube URL allowlist, slug helper |
+| `identity` | users, roles, gender, registration/login/password reset, JWT cookie filter, `GenderGateFilter`, `GenderScope`, security config, admin and demo seeders |
+| `courses` | courses, lessons, resources; public catalogue and lesson player data |
+| `progress` | completions, progress calculation, learner dashboard |
+| `questions` | lesson Discussion: comments, replies, reactions, edits, gender-scoped queries |
+| `discussions` | gender-specific rooms and posts (+ admin moderation) |
+| `assessments` | quizzes, versions, attempts, scoring, grading |
+| `resources` | notes and benefits (with optional attachment) |
+| `files` | administrator uploads and downloads |
+| `audit` | admin audit log (interceptor + endpoint) |
+| `admin` | admin-only controllers (content, assessments, community/users/reports) |
+| `common` | `ApiException`, global error handler, `RateLimiter`, YouTube allowlist, slugs |
 
-DTOs are Java records; entities are never returned directly. Business rules live in services; controllers stay thin where logic is non-trivial.
+DTOs are records; entities are never returned directly.
 
-## Authentication & authorization
-- Passwords hashed with BCrypt (cost 12).
-- Login/registration issue a signed JWT (HS256) stored in a `Secure`-configurable, `HttpOnly`, `SameSite=Lax` cookie `ilm_token`. A `Bearer` header is also accepted.
-- CSRF protection is disabled deliberately: the API is stateless, JSON-only and relies on SameSite=Lax cookies. Revisit if cross-site embedding is ever needed.
-- Route rules: `/api/v1/auth/**` and `GET /api/v1/courses/**` are public; `/api/v1/admin/**` requires `ROLE_ADMIN`; all other `/api/v1/**` requires sign-in. Ownership checks (questions, attempts, progress) are enforced in code by user id.
-- Suspended users cannot authenticate (filter loads the user and requires `ACTIVE`).
-- Rate limits (in-memory, per instance): login 10/10 min per IP, registration 10/h per IP, password-reset requests 5/h per IP, questions 10/h per user.
-- Videos: only YouTube URLs are accepted and stored as `youtube-nocookie.com/embed/<id>`; no arbitrary iframe HTML.
+## Security model
+- **Auth:** BCrypt (cost 12); JWT (HS256) in a `HttpOnly`, `SameSite=Lax` cookie `ilm_token` (`Secure` when `COOKIE_SECURE=true`); CSRF is disabled on purpose (stateless, JSON-only, SameSite cookie).
+- **Routes:** `/api/v1/auth/**`, `GET /courses/**`, `GET /files/**` are public (non-image files then require sign-in in the controller); `/api/v1/admin/**` needs `ROLE_ADMIN`; everything else needs sign-in. Ownership checks are in code.
+- **Gender gate:** `GenderGateFilter` (inside the security chain) answers `403 GENDER_REQUIRED` to learners without a gender on every API except `GET /me`, `PUT /me/gender`, auth and the public catalogue.
+- **Gender immutability:** `User.gender` is `@Column(updatable=false)`; the only write after registration is `UserRepository.setGenderOnce` (`UPDATE … WHERE gender IS NULL`) → a second attempt returns 409. (No DB trigger: MySQL needs extra privileges for triggers when binary logging is on.)
+- **Gender scoping:** `GenderScope.restrictedTo(user)` decides the visible group (learner → own, admin → all). Questions are filtered inside repository queries (`userId in (select id from User where gender = :g)`); rooms are always loaded together with the caller's gender, so the other group's resources return 404. Reactions and replies re-check visibility.
+- **Rate limits** (in-memory, per client IP / user): login, registration, password reset, questions, replies, reactions, posts. `server.forward-headers-strategy=native` makes the limiter see the real visitor IP behind Traefik/Next.
+- **Videos:** only YouTube URLs, stored as `youtube-nocookie.com/embed/<id>`.
+- **Uploads:** extension allowlist + magic-byte check, random stored names, `nosniff`, restrictive CSP on non-PDF, images public / other files authenticated; SVG/HTML are rejected.
+- **Audit:** `AdminAuditInterceptor` records every non-GET request to `/api/v1/admin/**` (admin, route pattern, path, status). Request bodies are not stored.
 
 ## Quiz lifecycle
-1. `POST /quizzes/{id}/attempts` creates (or resumes) an in-progress attempt.
-2. `PUT /attempts/{id}/answers` autosaves; options are validated against the question.
-3. `POST /attempts/{id}/submit` scores MCQs, marks written answers pending, sets status `GRADED` or `AWAITING_REVIEW`. Calling submit again returns the stored result (idempotent).
-4. Admin grades written answers (`PATCH /admin/answers/{id}/grade`); when none are pending the attempt becomes `GRADED` and `passed` is set.
-5. Editing a quiz with attempts archives the old row and creates `version + 1`.
+Start/resume attempt → autosave answers → submit (idempotent; MCQs scored, written answers pending → `AWAITING_REVIEW` or `GRADED`) → admin grades written answers → status/`passed` updated. Editing a quiz with attempts archives it and creates `version + 1`.
 
-## Frontend structure (`frontend/src`)
-- `app/` — routes. `(app)/` group = learner pages inside `AppShell` (sidebar on desktop, bottom nav on mobile). `admin/` = admin pages inside `AppShell admin`. Public pages (`/`, `/courses`) are Server Components; interactive pages are client components.
-- `components/` — `AppShell`, `PublicHeader/Footer`, `CourseCard`, `Modal`, `ui` (progress bar, badges, empty/error/loading states, field), `AuthShell`, `Logo`.
-- `lib/` — typed API client (`api.ts`), auth hooks (`auth.tsx`: `useMe`, `useRequireUser`, `useLogout`), shared types, formatting helpers.
-- Forms: React Hook Form + Zod (login, register, ask question); TanStack Query for data and mutations.
-- `next.config.mjs` rewrites `/api/*` to `API_URL` (default `http://localhost:8080`).
-- Route guards on the client are a convenience; the backend enforces access.
-
-## Gender separation (added)
-- `users.gender` (`MALE`/`FEMALE`, NULL until chosen). The JPA field is `updatable=false`; the only write path after registration is `UserRepository.setGenderOnce`, an `UPDATE ... WHERE gender IS NULL`, so a second attempt changes nothing and the API answers 409.
-- `GenderGateFilter` (inside the security chain) answers `403 GENDER_REQUIRED` to every API call from a learner without a gender except `GET /me`, `PUT /me/gender`, auth and the public catalogue.
-- `GenderScope` decides the visible group per request (learner → own gender, administrator → unrestricted). Questions are filtered inside the repository query (`userId in (select id from User where gender = :g)`); discussion rooms are always looked up together with the caller's gender, so other-group resources return 404.
-- `AdminAuditInterceptor` records every non-GET request to `/api/v1/admin/**` in `admin_audit_log` (admin, method + route pattern, path, HTTP status; request bodies are not stored).
-- Frontend: `AppShell` redirects learners without a gender to `/choose-gender`; new pages `/discussions`, `/discussions/[id]`, `/admin/discussions`, `/admin/audit`.
+## Frontend (`frontend/src`)
+- `app/` routes: public (`/`, `/courses`, auth pages), `(app)/` learner pages inside `AppShell`, `admin/` pages inside `AppShell admin`, `/profile`, `/choose-gender`. `middleware.ts` sends signed-in visitors from `/`, `/login`, `/register` to their dashboard.
+- `components/`: `AppShell` (sidebar, mobile bottom nav, gender redirect), `LessonComments` (Discussion section), `FileUpload`, `Modal`, `ui` (progress, badges, states), `LandingView`, `MosqueScene`, `HeroBackground`, `Reveal`, `GenderPicker`.
+- `lib/`: typed API client, auth hooks, theme (CSS variables, five palettes), i18n (14 languages), `hydrated.ts` (submit buttons stay disabled until React is ready, so an early click can never fall back to a native form submit).
+- Forms: React Hook Form + Zod; data: TanStack Query. `next.config.mjs` rewrites `/api/*` to `API_URL` and builds a `standalone` server.

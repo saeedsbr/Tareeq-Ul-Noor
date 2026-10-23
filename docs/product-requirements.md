@@ -1,54 +1,45 @@
 # Product requirements
 
-**Tareeq Ul Noor** — *Learn · Reflect · Grow.* A responsive Islamic learning platform for the general public: structured courses, embedded video lessons, progress tracking, lesson-specific questions, quizzes, and notes/benefits. One administrator manages everything in the MVP.
+**Tareeq Ul Noor** (طريق النور, "the path of light") — *Learn · Reflect · Grow.* A responsive Islamic learning platform for the general public: structured courses, embedded video lessons, progress tracking, lesson discussions, quizzes, notes/benefits and downloadable resources. One administrator manages the platform.
 
 ## Principles
-- Open to anyone; not tied to one academy or cohort.
-- Make the next action obvious: continue a course, finish a lesson, ask a question, take a quiz.
-- Keep notes, benefits, questions and quizzes attached to their lesson.
-- Mobile-first, spacious on desktop.
-- Focused MVP: no payments, certificates, public discussion or microservices.
+- Open to anyone; free; browsing needs no account.
+- Make the next action obvious: continue a course, finish a lesson, ask, take a quiz.
+- Keep notes, benefits, files, discussion and quizzes attached to their lesson.
+- Mobile-first, spacious on desktop, usable in 14 languages (Arabic and Urdu right-to-left).
+- Keep the first release focused: no payments, certificates or microservices.
 
 ## Roles
-**Learner** — browse published courses; register/sign in; watch lessons and mark them complete; submit private lesson questions and read replies; take quizzes and see history; read notes and benefits.
+**Learner** — browse courses; register with a gender (Male/Female); watch lessons and mark them complete; take part in the lesson Discussion and gender-specific discussion rooms; take quizzes; read notes, benefits and files; choose a colour theme and language.
 
-**Administrator (exactly one in MVP)** — create/edit/reorder/publish/archive courses and lessons; add YouTube URLs, summaries, notes, benefits, resources; build quizzes (MCQ, short answer, essay); answer and moderate questions; grade written answers; manage learner accounts; view basic reports. Role-based authorization is used even though there is one admin. The admin is created by a one-time setup from environment variables; there is no public admin registration.
+**Administrator (one account)** — create/edit/reorder/publish/archive courses and lessons; add YouTube URLs; **upload files from their device** (PDF, images, Office files, audio/video) as lesson resources, note attachments and course covers; build quizzes (MCQ, short answer, essay) and grade written answers; answer and moderate questions; run discussion rooms for both gender groups; manage learner accounts; read the audit log. Created by a one-time setup from environment variables; there is no public admin registration.
 
-## Screens (design reference)
-1. Landing — hero, "Start Learning"/"Explore Courses", benefits row, featured courses, Qur'anic footer. No fabricated statistics.
-2. Learner dashboard — greeting, progress, summary cards, Continue Learning, My Courses, activity, latest notes, recent questions.
-3. Lesson — ordered lesson list, embedded video, Mark as Complete, tabs (Notes, Benefits, Resources, Questions, Quiz), previous/next.
-4. Quiz — question progress, MCQ and written answers, overview, confirmation before submit; results with score and review.
-5. Questions & Answers — private list with course/lesson context, status (Pending/Answered/Resolved), replies.
-6. Mobile — compact dashboard with bottom navigation.
+## Screens
+Landing (hero with mosque illustration, benefits, featured courses, how it works, FAQ) · learner dashboard · course page · lesson page (video, Notes/Benefits/Resources/Quiz tabs, **Discussion** section underneath) · quiz and results · Questions (mine / my group's, with search) · Discussions (rooms) · notes library · profile (read-only gender, theme, language, password) · admin overview, courses, lessons, quizzes (+ list of every learner attempt with review and grading), question inbox, notes, discussions, learners, audit log.
 
 ## Business rules
-- **Course progress** = completed published lessons ÷ published lessons × 100. No published lessons → 0% and a "not ready" message.
-- **Completion** is an explicit action (video playback can't prove viewing) and can be undone.
-- **Questions** belong to a learner and a lesson. Statuses: SUBMITTED (shown "Pending"), ANSWERED, RESOLVED, HIDDEN. Private between learner and admin.
-- **MCQ scoring** happens on the server; correct answers are never sent before submission.
-- **Written answers** are "awaiting review" until graded; provisional scores are clearly marked as not final.
-- **Percentage** = points awarded ÷ points possible × 100; possible points must be > 0; resubmitting an attempt does not re-award.
-- **Quiz changes** never rewrite history: editing a quiz that has attempts creates a new version.
+- **Course progress** = completed published lessons ÷ published lessons × 100; no published lessons → 0%.
+- **Completion** is an explicit, reversible action (watching a video proves nothing).
+- **MCQ scoring** happens on the server; answer keys are never sent before submission. Written answers show "awaiting review" until graded. Percentage = points awarded ÷ points possible × 100; a second submit does not re-score.
+- **Quiz changes** never rewrite history: editing a quiz that already has attempts creates a new version.
 - **Publication:** only published content is public; archiving never deletes progress or results.
-- **Privacy:** learners can only read/change their own questions, progress and attempts.
+- **Files:** only the administrator uploads; allowlisted types, 25 MB maximum; images (covers) are public, all other files need a signed-in account.
+
+## Gender separation (permanent)
+- Every learner chooses **Male or Female** at registration (existing accounts without one get a one-time selection screen before anything else). It is stored permanently, shown read-only in the profile and **cannot be changed by the user, through any screen or API**.
+- **Questions / lesson Discussion:** visible only to learners of the same gender group (plus the administrator). Within the group, learners and the teacher can comment, reply, like/dislike, edit and delete their own items. The other group's content is absent from lists, search and answers 404 on direct links or API calls.
+- **Discussion rooms** exist per gender group; learners only see, search, post and reply in their own group's rooms.
+- Enforced in the Spring Boot backend (see architecture.md), not just the UI. The administrator sees and moderates both groups; every state-changing admin request is logged.
+- Names between learners are shown as first names only.
 
 ## Acceptance criteria
-- Anyone can browse published courses without signing in; an account is needed to save progress, ask questions and take quizzes.
-- A learner can open a lesson, watch the embedded video and mark it complete.
-- Dashboard progress matches backend data.
-- Learners can submit lesson questions and see their statuses and replies.
-- The administrator can manage courses, lessons, quizzes, notes and replies.
-- MCQs are scored server-side; written answers show "awaiting review" until graded.
-- Notes and benefits show under the right lesson and in the notes library.
-- Learners cannot reach admin actions or other learners' records.
-- Main journeys work on mobile with empty, loading, validation, success and error states.
+1. Anyone can browse published courses without an account; an account is needed for progress, discussion and quizzes.
+2. A learner can open a lesson, watch the embedded video, mark it complete, and see progress on the dashboard.
+3. Every learner account has a permanently stored gender; the other group's questions, comments and rooms are unreachable (UI, API, search, direct link).
+4. MCQs are scored server-side; written answers are clearly pending until graded.
+5. The administrator can manage all content, upload files from their device, answer questions, moderate rooms and read the audit log.
+6. Learners cannot reach admin actions or other learners' private data.
+7. The main journeys work on mobile with loading, empty, validation, success and error states, in any of the 14 languages.
 
 ## Out of scope (later)
-Certificates, badges, public discussion, multiple teachers, payments, advanced analytics, video hosting.
-
-## Gender-based separation (added)
-- Learners choose **Male or Female** at registration (existing accounts without one are sent to a one-time selection screen before anything else). It is stored permanently and cannot be changed by the user in the profile or through any API; it is shown read-only in the profile.
-- **Questions** are visible only to learners of the same gender group (plus the administrator). This replaces the earlier rule that questions were private to the individual learner: people in the same group can now see each other's questions and the teacher's replies; the other group cannot, by list, search, direct link or API (other group's items answer 404).
-- **Discussion rooms** are created per gender group. Learners only see, search, post and reply in rooms of their own group.
-- The **administrator** can see and manage both groups (users, questions, replies, rooms, posts). Every state-changing admin request is written to an audit log.
+Certificates, badges, multiple teachers, payments, email delivery (reset links are logged), advanced analytics, video hosting.
