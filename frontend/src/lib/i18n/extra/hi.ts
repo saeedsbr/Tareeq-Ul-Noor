@@ -454,4 +454,7 @@ export const hi: Record<string, string> = {
   "Submitted": "जमा किया गया",
   "Passed": "उत्तीर्ण",
   "Not passed": "अनुत्तीर्ण",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "इस क्विज़ के {n} शिक्षार्थी प्रयास हैं। इसे हटाने पर वे प्रयास और उनके स्कोर भी हमेशा के लिए हट जाएँगे।",
+  "Delete this quiz permanently? This cannot be undone.": "यह क्विज़ स्थायी रूप से हटाएँ? इसे वापस नहीं किया जा सकता।",
+  "Show archived": "संग्रहीत दिखाएँ",
 };

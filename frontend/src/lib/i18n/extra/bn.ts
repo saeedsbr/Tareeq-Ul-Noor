@@ -454,4 +454,7 @@ export const bn: Record<string, string> = {
   "Submitted": "জমা দেওয়া হয়েছে",
   "Passed": "উত্তীর্ণ",
   "Not passed": "উত্তীর্ণ হয়নি",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "এই কুইজে {n}টি শিক্ষার্থীর চেষ্টা আছে। মুছলে ওই চেষ্টা ও স্কোরগুলোও স্থায়ীভাবে মুছে যাবে।",
+  "Delete this quiz permanently? This cannot be undone.": "এই কুইজ স্থায়ীভাবে মুছবেন? এটি ফেরানো যাবে না।",
+  "Show archived": "আর্কাইভ করা দেখান",
 };

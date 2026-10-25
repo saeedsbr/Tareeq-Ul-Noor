@@ -454,4 +454,7 @@ export const ms: Record<string, string> = {
   "Submitted": "Dihantar",
   "Passed": "Lulus",
   "Not passed": "Tidak lulus",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "Kuiz ini mempunyai {n} percubaan pelajar. Memadamnya juga akan memadam percubaan dan skor tersebut secara kekal.",
+  "Delete this quiz permanently? This cannot be undone.": "Padam kuiz ini secara kekal? Ini tidak boleh dibatalkan.",
+  "Show archived": "Tunjukkan yang diarkibkan",
 };

@@ -23,7 +23,7 @@ public class AdminAssessmentController {
     public record OptionAdmin(Long id, String text, boolean correct) {}
     public record QuestionAdmin(Long id, String type, String prompt, int points, String modelAnswer, List<OptionAdmin> options) {}
     public record QuizAdmin(Long id, Long lessonId, String lessonTitle, String title, String instructions, int passPercentage, String status, int version,
-                            boolean hasAttempts, List<QuestionAdmin> questions) {}
+                            boolean hasAttempts, long attemptCount, List<QuestionAdmin> questions) {}
     public record GradeReq(@Min(0) int points, @Size(max = 2000) String feedback) {}
     public record AttemptRow(Long attemptId, String learnerName, String learnerEmail, String gender, Long quizId, String quizTitle, int quizVersion,
                              String lessonTitle, String status, Integer scoreAwarded, Integer scorePossible, java.math.BigDecimal percentage, Boolean passed, java.time.Instant submittedAt) {}
@@ -35,11 +35,13 @@ public class AdminAssessmentController {
     private final QuizAttemptRepository attempts;
     private final LessonRepository lessons;
     private final UserRepository users;
+    private final QuizAnswerRepository answers;
     private final AssessmentService service;
     private final QuizController quizController;
 
     public AdminAssessmentController(QuizRepository quizzes, QuizQuestionRepository questions, QuizOptionRepository options, QuizAttemptRepository attempts,
-                                     LessonRepository lessons, UserRepository users, AssessmentService service, QuizController qc) {
+                                     LessonRepository lessons, UserRepository users, AssessmentService service, QuizController qc, QuizAnswerRepository answers) {
+        this.answers = answers;
         this.quizzes = quizzes; this.questions = questions; this.options = options; this.attempts = attempts; this.lessons = lessons; this.users = users;
         this.service = service; this.quizController = qc;
     }
@@ -49,13 +51,13 @@ public class AdminAssessmentController {
         var os = options.findByQuizQuestionIdInOrderByPositionAscIdAsc(qs.stream().map(QuizQuestion::getId).toList()).stream().collect(Collectors.groupingBy(QuizOption::getQuizQuestionId));
         var lesson = lessons.findById(q.getLessonId()).orElse(null);
         return new QuizAdmin(q.getId(), q.getLessonId(), lesson == null ? "" : lesson.getTitle(), q.getTitle(), q.getInstructions(), q.getPassPercentage(), q.getStatus(),
-            q.getVersion(), attempts.existsByQuizId(q.getId()),
+            q.getVersion(), attempts.existsByQuizId(q.getId()), attempts.countByQuizId(q.getId()),
             qs.stream().map(x -> new QuestionAdmin(x.getId(), x.getType(), x.getPrompt(), x.getPoints(), x.getModelAnswer(),
                 os.getOrDefault(x.getId(), List.of()).stream().map(o -> new OptionAdmin(o.getId(), o.getText(), o.isCorrect())).toList())).toList());
     }
 
     @GetMapping("/quizzes")
-    public List<QuizAdmin> list() { return quizzes.findByStatusNotOrderByIdDesc("ARCHIVED").stream().map(this::dto).toList(); }
+    public List<QuizAdmin> list() { return quizzes.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id")).stream().map(this::dto).toList(); }
 
     @GetMapping("/quizzes/{id}")
     public QuizAdmin one(@PathVariable Long id) { return dto(quizzes.findById(id).orElseThrow(() -> ApiException.notFound("Quiz not found"))); }
@@ -106,8 +108,20 @@ public class AdminAssessmentController {
         return q;
     }
 
+    /** Default: archive (hide, keep history). With permanent=true the quiz is removed for good; a quiz that has attempts also needs force=true, which deletes those attempts and their scores. */
     @DeleteMapping("/quizzes/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) @Transactional
-    public void archive(@PathVariable Long id) { quizzes.findById(id).orElseThrow(() -> ApiException.notFound("Quiz not found")).setStatus("ARCHIVED"); }
+    public void remove(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean permanent, @RequestParam(defaultValue = "false") boolean force) {
+        Quiz q = quizzes.findById(id).orElseThrow(() -> ApiException.notFound("Quiz not found"));
+        if (!permanent) { q.setStatus("ARCHIVED"); return; }
+        var taken = attempts.findByQuizId(id);
+        if (!taken.isEmpty()) {
+            if (!force) throw ApiException.conflict("This quiz has " + taken.size() + " learner attempt(s). Confirm to delete them together with the quiz.");
+            answers.deleteByAttemptIdIn(taken.stream().map(QuizAttempt::getId).toList());
+            attempts.deleteAll(taken);
+            attempts.flush();
+        }
+        quizzes.delete(q); // questions and options are removed by the database (ON DELETE CASCADE)
+    }
 
     // ---- manual grading ----
     /** Every submitted attempt (newest first), optionally for one quiz and/or one status (AWAITING_REVIEW, GRADED). */

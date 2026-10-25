@@ -454,4 +454,7 @@ export const ar: Record<string, string> = {
   "Submitted": "تاريخ الإرسال",
   "Passed": "ناجح",
   "Not passed": "لم ينجح",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "لهذا الاختبار {n} محاولة من المتعلمين. سيؤدي حذفه إلى حذف هذه المحاولات ودرجاتها نهائيًا.",
+  "Delete this quiz permanently? This cannot be undone.": "هل تريد حذف هذا الاختبار نهائيًا؟ لا يمكن التراجع عن ذلك.",
+  "Show archived": "إظهار المؤرشف",
 };

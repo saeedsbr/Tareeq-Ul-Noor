@@ -10,7 +10,7 @@ import { useI18n } from '@/lib/i18n';
 
 type Opt = { text: string; correct: boolean };
 type Q = { type: 'MCQ' | 'SHORT_ANSWER' | 'ESSAY'; prompt: string; points: number; modelAnswer?: string | null; options: Opt[] };
-type Quiz = { id?: number; lessonId?: number; lessonTitle?: string; title?: string; instructions?: string | null; passPercentage: number; status: string; version?: number; hasAttempts?: boolean; questions: Q[] };
+type Quiz = { id?: number; lessonId?: number; lessonTitle?: string; title?: string; instructions?: string | null; passPercentage: number; status: string; version?: number; hasAttempts?: boolean; attemptCount?: number; questions: Q[] };
 type Lesson = { id: number; title: string; courseTitle: string };
 type Pending = { attemptId: number; learnerName: string; quizTitle: string; submittedAt: string };
 
@@ -92,7 +92,15 @@ export default function AdminQuizzes() {
     mutationFn: (z: Quiz) => { const body = { ...z, questions: z.questions.map((q) => ({ ...q, options: q.type === 'MCQ' ? q.options : [] })) }; return z.id ? put(`/admin/quizzes/${z.id}`, body) : post('/admin/quizzes', body); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-quizzes'] }); setEdit(null); setErr(''); }, onError: (e: any) => setErr(e.message),
   });
-  const archive = useMutation({ mutationFn: (id: number) => del(`/admin/quizzes/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-quizzes'] }) });
+  const refreshQuizzes = () => { qc.invalidateQueries({ queryKey: ['admin-quizzes'] }); qc.invalidateQueries({ queryKey: ['admin-attempts'] }); qc.invalidateQueries({ queryKey: ['admin-pending'] }); qc.invalidateQueries({ queryKey: ['admin-overview'] }); };
+  const archive = useMutation({ mutationFn: (id: number) => del(`/admin/quizzes/${id}`), onSuccess: refreshQuizzes });
+  const remove = useMutation({ mutationFn: ({ id, force }: { id: number; force: boolean }) => del(`/admin/quizzes/${id}?permanent=true&force=${force}`), onSuccess: refreshQuizzes });
+  const [showArchived, setShowArchived] = useState(false);
+  const deleteQuiz = (z: Quiz) => {
+    const n = z.attemptCount ?? 0;
+    const ok = n > 0 ? confirm(t('This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.', { n })) : confirm(t('Delete this quiz permanently? This cannot be undone.'));
+    if (ok) remove.mutate({ id: z.id!, force: n > 0 });
+  };
   const setQ = (i: number, q: Q) => setEdit({ ...edit!, questions: edit!.questions.map((x, j) => (j === i ? q : x)) });
 
   return (
@@ -105,11 +113,15 @@ export default function AdminQuizzes() {
           <div key={p.attemptId} className="flex flex-wrap items-center gap-3 p-4"><div className="flex-1"><p className="text-sm font-medium">{p.learnerName}</p><p className="text-xs text-muted">{p.quizTitle} · {new Date(p.submittedAt).toLocaleString()}</p></div>
             <button className="btn-primary" onClick={() => setGrading(p.attemptId)}>{t("Grade")}</button></div>))}</div></section>)}
 
-      <section>{quizzes.isLoading ? <Spinner /> : quizzes.isError ? <ErrorBox retry={() => quizzes.refetch()} /> : quizzes.data!.length === 0 ? <Empty title={t("No quizzes yet")} /> : (
-        <div className="card divide-y divide-line">{quizzes.data!.map((z) => (
+      <section>
+        <label className="mb-3 flex items-center gap-2 text-sm text-muted"><input type="checkbox" className="accent-forest" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} /> {t('Show archived')}</label>
+        {remove.isError && <div className="mb-3"><ErrorBox message={(remove.error as Error).message} /></div>}
+        {quizzes.isLoading ? <Spinner /> : quizzes.isError ? <ErrorBox retry={() => quizzes.refetch()} /> : quizzes.data!.filter((z) => showArchived || z.status !== 'ARCHIVED').length === 0 ? <Empty title={t("No quizzes yet")} /> : (
+        <div className="card divide-y divide-line">{quizzes.data!.filter((z) => showArchived || z.status !== 'ARCHIVED').map((z) => (
           <div key={z.id} className="flex flex-wrap items-center gap-3 p-4"><div className="min-w-0 flex-1"><p className="font-medium">{z.title}</p><p className="text-xs text-muted">{z.lessonTitle} · v{z.version} · {t("Questions: {n}", { n: z.questions.length })}</p></div>
             <Badge>{z.status}</Badge><button className="btn-secondary" onClick={() => { setErr(''); setEdit(z); }}>{t("Edit")}</button>
-            <button className="btn-danger" onClick={() => confirm(t('Archive this quiz? Past attempts are kept.')) && archive.mutate(z.id!)}>{t("Archive")}</button></div>))}</div>)}</section>
+            {z.status !== 'ARCHIVED' && <button className="btn-secondary" onClick={() => confirm(t('Archive this quiz? Past attempts are kept.')) && archive.mutate(z.id!)}>{t("Archive")}</button>}
+            <button className="btn-danger" disabled={remove.isPending} onClick={() => deleteQuiz(z)}>{t("Delete")}</button></div>))}</div>)}</section>
 
       <Attempts quizzes={quizzes.data ?? []} onReview={setGrading} />
 

@@ -454,4 +454,7 @@ export const tr: Record<string, string> = {
   "Submitted": "Gönderildi",
   "Passed": "Geçti",
   "Not passed": "Geçemedi",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "Bu sınavın {n} öğrenci denemesi var. Silmek bu denemeleri ve puanlarını da kalıcı olarak siler.",
+  "Delete this quiz permanently? This cannot be undone.": "Bu sınav kalıcı olarak silinsin mi? Bu işlem geri alınamaz.",
+  "Show archived": "Arşivlenenleri göster",
 };

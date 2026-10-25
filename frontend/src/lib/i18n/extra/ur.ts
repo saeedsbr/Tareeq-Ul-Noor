@@ -454,4 +454,7 @@ export const ur: Record<string, string> = {
   "Submitted": "جمع کرایا گیا",
   "Passed": "کامیاب",
   "Not passed": "کامیاب نہیں",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "اس کوئز کی {n} طلبہ کوششیں ہیں۔ اسے حذف کرنے سے وہ کوششیں اور ان کے اسکور بھی ہمیشہ کے لیے حذف ہو جائیں گے۔",
+  "Delete this quiz permanently? This cannot be undone.": "یہ کوئز مستقل طور پر حذف کریں؟ اسے واپس نہیں کیا جا سکتا۔",
+  "Show archived": "محفوظ شدہ دکھائیں",
 };

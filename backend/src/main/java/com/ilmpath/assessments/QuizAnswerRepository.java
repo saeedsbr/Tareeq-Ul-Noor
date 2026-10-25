@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface QuizAnswerRepository extends JpaRepository<QuizAnswer, Long> {
     List<QuizAnswer> findByAttemptId(Long attemptId);
+    void deleteByAttemptIdIn(java.util.Collection<Long> attemptIds);
     Optional<QuizAnswer> findByAttemptIdAndQuizQuestionId(Long attemptId, Long quizQuestionId);
 }

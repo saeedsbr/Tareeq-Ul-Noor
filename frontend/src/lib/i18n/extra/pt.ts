@@ -454,4 +454,7 @@ export const pt: Record<string, string> = {
   "Submitted": "Enviado",
   "Passed": "Aprovado",
   "Not passed": "Não aprovado",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "Este questionário tem {n} tentativas de alunos. Eliminá-lo também elimina permanentemente essas tentativas e as respetivas pontuações.",
+  "Delete this quiz permanently? This cannot be undone.": "Eliminar este questionário permanentemente? Não é possível anular.",
+  "Show archived": "Mostrar arquivados",
 };

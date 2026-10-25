@@ -10,6 +10,8 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     List<QuizAttempt> findByUserIdOrderByStartedAtDesc(String userId);
     List<QuizAttempt> findByStatusOrderBySubmittedAtAsc(String status);
     boolean existsByQuizId(Long quizId);
+    long countByQuizId(Long quizId);
+    List<QuizAttempt> findByQuizId(Long quizId);
     long countByUserIdAndStatusNot(String userId, String status);
     Optional<QuizAttempt> findFirstByUserIdAndQuizIdAndStatus(String userId, Long quizId, String status);
 }

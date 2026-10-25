@@ -454,4 +454,7 @@ export const nl: Record<string, string> = {
   "Submitted": "Ingediend",
   "Passed": "Geslaagd",
   "Not passed": "Niet geslaagd",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "Deze quiz heeft {n} pogingen van leerlingen. Als je hem verwijdert, worden ook die pogingen en hun scores definitief verwijderd.",
+  "Delete this quiz permanently? This cannot be undone.": "Deze quiz definitief verwijderen? Dit kan niet ongedaan worden gemaakt.",
+  "Show archived": "Gearchiveerde tonen",
 };

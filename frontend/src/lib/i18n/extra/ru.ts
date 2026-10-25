@@ -454,4 +454,7 @@ export const ru: Record<string, string> = {
   "Submitted": "Отправлено",
   "Passed": "Сдан",
   "Not passed": "Не сдан",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "У этого теста {n} попыток учеников. При удалении эти попытки и их баллы тоже будут удалены навсегда.",
+  "Delete this quiz permanently? This cannot be undone.": "Удалить этот тест навсегда? Это нельзя отменить.",
+  "Show archived": "Показать архивные",
 };

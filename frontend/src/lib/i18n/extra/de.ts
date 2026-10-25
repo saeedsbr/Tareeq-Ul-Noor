@@ -454,4 +454,7 @@ export const de: Record<string, string> = {
   "Submitted": "Abgesendet",
   "Passed": "Bestanden",
   "Not passed": "Nicht bestanden",
+  "This quiz has {n} learner attempts. Deleting it also permanently deletes those attempts and their scores.": "Dieses Quiz hat {n} Versuche von Lernenden. Beim Löschen werden diese Versuche und ihre Ergebnisse ebenfalls dauerhaft gelöscht.",
+  "Delete this quiz permanently? This cannot be undone.": "Dieses Quiz endgültig löschen? Das kann nicht rückgängig gemacht werden.",
+  "Show archived": "Archivierte anzeigen",
 };

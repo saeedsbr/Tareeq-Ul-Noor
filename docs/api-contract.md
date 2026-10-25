@@ -39,7 +39,7 @@ Anything belonging to the other group returns 404.
 | Lessons | `GET /admin/lessons[?courseId]`, `GET/PUT/DELETE /admin/lessons/{id}`, `POST /admin/lessons`, `PUT /admin/courses/{id}/lessons/order` |
 | Notes | `GET/POST /admin/notes`, `PUT/DELETE /admin/notes/{id}` (optional `attachmentName`, `attachmentUrl` = `/api/v1/files/{uuid}`) |
 | Files | `POST /admin/files` (field `file`, ≤ 25 MB; PDF, PNG/JPG/WEBP/GIF, TXT, DOC(X), PPT(X), XLS(X), MP3, M4A, MP4) → `{id,name,url,contentType,size}` |
-| Quizzes | `GET/POST /admin/quizzes`, `GET/PUT/DELETE /admin/quizzes/{id}`; attempts: `GET /admin/attempts[?quizId&status]` (all submitted attempts with learner, gender, score, status), `GET /admin/attempts/pending`, grading: `GET /admin/attempts/{id}`, `PATCH /admin/answers/{id}/grade` |
+| Quizzes | `GET/POST /admin/quizzes` (list includes archived), `GET/PUT /admin/quizzes/{id}`, `DELETE /admin/quizzes/{id}` = archive, `DELETE /admin/quizzes/{id}?permanent=true[&force=true]` = delete for good (409 if the quiz has learner attempts unless `force=true`, which also deletes those attempts and scores); attempts: `GET /admin/attempts[?quizId&status]` (all submitted attempts with learner, gender, score, status), `GET /admin/attempts/pending`, grading: `GET /admin/attempts/{id}`, `PATCH /admin/answers/{id}/grade` |
 | Questions | `GET /admin/questions[?status]`, `POST /admin/questions/{id}/replies`, `PATCH /admin/questions/{id}/status` |
 | Rooms | `GET/POST /admin/rooms`, `PUT /admin/rooms/{id}`, `GET/POST /admin/rooms/{id}/posts`, `PATCH /admin/posts/{id}/status` |
 | Users and reports | `GET /admin/users` (with gender), `PATCH /admin/users/{id}/status`, `GET /admin/reports/overview`, `GET /admin/audit-log?limit=` |
