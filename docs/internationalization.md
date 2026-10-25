@@ -20,3 +20,6 @@ Add it to `LANGUAGES` in `lib/i18n/languages.ts` (`rtl: true` if needed), create
 
 ## Quality note
 Translations were written by the development assistant and have not been reviewed by native speakers — have Arabic, Urdu, Bengali and Hindi checked first.
+
+## Browser auto-translation is switched off
+The site translates its own interface, so browser translation (Chrome Translate etc.) must not touch it: it re-translated text that was already in the chosen language (for example Dutch questions) and garbled sentences. The root layout therefore sends `<html translate="no">` and `<meta name="google" content="notranslate">`, and the chosen language is also kept in the `tun-lang` cookie so the first HTML response already has the right `lang` and `dir` (instead of `lang="en"` that a browser could mistake for an English page). User-written content (questions, comments, posts, notes) never goes through `t()`.

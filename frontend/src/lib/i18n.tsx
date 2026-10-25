@@ -21,6 +21,7 @@ function apply(lang: LangCode) {
   const meta = LANGUAGES.find((l) => l.code === lang);
   document.documentElement.lang = lang;
   document.documentElement.dir = meta?.rtl ? 'rtl' : 'ltr';
+  try { document.cookie = `tun-lang=${lang}; path=/; max-age=31536000; samesite=lax`; } catch { /* cookies blocked */ }
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
