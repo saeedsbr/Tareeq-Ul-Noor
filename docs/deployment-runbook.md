@@ -13,7 +13,7 @@ Java 21 and Maven 3.9 (API), Node 20+ (web), MySQL 8.x. Docker for the container
 | `ILMPATH_ADMIN_EMAIL`, `ILMPATH_ADMIN_PASSWORD`, `ILMPATH_ADMIN_NAME` | creates the single administrator at startup **only if none exists** | empty (warning logged) |
 | `ILMPATH_SEED_DEMO` | sample courses and demo accounts (development only) | `false` |
 | `UPLOAD_DIR` | where administrator uploads are stored | `./uploads` (`/data/uploads` in the images) |
-Web: `API_URL` (address of the API; default `http://localhost:8080`; baked into the build for the `/api` rewrite).
+Web: `API_URL` (address of the API; for the Compose deployment it defaults to `http://tun-api:8080` and is baked into the build for the `/api` rewrite). The Compose API service also has the `tareeq` network alias, so `http://tareeq:8080` can be used when required by the hosting platform.
 
 ## Local development
 ```
